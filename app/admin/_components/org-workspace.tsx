@@ -185,26 +185,28 @@ export function OrgWorkspace({
           {admins.length === 0 ? <p>No admins assigned.</p> : null}
           {admins.map((admin) => (
             <div key={admin.id} style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}>
-              <p style={{ margin: "0.15rem 0" }}>
-                <strong>{admin.user.username}</strong> ({admin.user.email})
-              </p>
-              <div className="org-admin-actions">
-                {canResetAdminPasswords ? (
+              <div className="org-admin-row">
+                <p className="org-admin-identity">
+                  <strong>{admin.user.username}</strong> ({admin.user.email})
+                </p>
+                <div className="org-admin-actions">
+                  {canResetAdminPasswords ? (
+                    <button
+                      className="secondary button-inline"
+                      type="button"
+                      onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                    >
+                      Reset password
+                    </button>
+                  ) : null}
                   <button
-                    className="secondary button-inline"
+                    className="danger button-inline"
                     type="button"
-                    onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                    onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
                   >
-                    Reset password
+                    Delete user
                   </button>
-                ) : null}
-                <button
-                  className="danger button-inline"
-                  type="button"
-                  onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
-                >
-                  Delete user
-                </button>
+                </div>
               </div>
             </div>
           ))}

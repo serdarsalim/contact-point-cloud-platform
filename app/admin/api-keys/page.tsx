@@ -32,17 +32,30 @@ export default async function ApiKeysPage({
   const selectedOrgId =
     requestedOrgId && canAccessOrganization(user, requestedOrgId) ? requestedOrgId : defaultOrgId;
   const selectedOrganization = organizations.find((org) => org.id === selectedOrgId) || organizations[0] || null;
-  const initialApiKeys = selectedOrgId ? await listApiKeys(selectedOrgId) : [];
+
+  if (!selectedOrganization) {
+    return (
+      <main className="admin-main">
+        <AdminNavbar isSuperadmin={superadmin} userEmail={user.email} />
+        <div className="card">
+          <h1>No organization available</h1>
+          <p>You do not have organization access for API key management.</p>
+        </div>
+      </main>
+    );
+  }
+
+  const initialApiKeys = await listApiKeys(selectedOrganization.id);
 
   return (
     <main className="admin-main">
       <AdminNavbar
         isSuperadmin={superadmin}
-        organizationName={selectedOrganization?.name}
+        organizationName={selectedOrganization.name}
         userEmail={user.email}
       />
       <ApiKeysManager
-        organizations={organizations.map((org) => ({ id: org.id, name: org.name }))}
+        organizationId={selectedOrganization.id}
         initialApiKeys={initialApiKeys.map((apiKey) => ({
           id: apiKey.id,
           organizationId: apiKey.organizationId,

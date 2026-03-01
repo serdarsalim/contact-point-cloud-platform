@@ -1,11 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-
-type Organization = {
-  id: string;
-  name: string;
-};
+import { FormEvent, useState } from "react";
 
 type ApiKey = {
   id: string;
@@ -18,25 +13,19 @@ type ApiKey = {
 };
 
 export function ApiKeysManager({
-  organizations,
+  organizationId,
   initialApiKeys
 }: {
-  organizations: Organization[];
+  organizationId: string;
   initialApiKeys: ApiKey[];
 }) {
-  const [selectedOrgId, setSelectedOrgId] = useState(organizations[0]?.id || "");
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
   const [label, setLabel] = useState("");
   const [tokenReveal, setTokenReveal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const filtered = useMemo(
-    () => apiKeys.filter((key) => !selectedOrgId || key.organizationId === selectedOrgId),
-    [apiKeys, selectedOrgId]
-  );
-
-  async function refresh(orgId: string) {
-    const response = await fetch(`/api/admin/api-keys?orgId=${encodeURIComponent(orgId)}`);
+  async function refresh() {
+    const response = await fetch(`/api/admin/api-keys?orgId=${encodeURIComponent(organizationId)}`);
     if (!response.ok) return;
     const data = (await response.json()) as { apiKeys: ApiKey[] };
     setApiKeys(data.apiKeys);
@@ -50,7 +39,7 @@ export function ApiKeysManager({
     const response = await fetch("/api/admin/api-keys", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ organizationId: selectedOrgId, label, scopes: ["templates:read"] })
+      body: JSON.stringify({ organizationId, label, scopes: ["templates:read"] })
     });
 
     const data = (await response.json().catch(() => null)) as { token?: string; error?: string } | null;
@@ -62,13 +51,13 @@ export function ApiKeysManager({
 
     setLabel("");
     setTokenReveal(data?.token || null);
-    await refresh(selectedOrgId);
+    await refresh();
   }
 
   async function revoke(keyId: string) {
     const response = await fetch(`/api/admin/api-keys/${keyId}/revoke`, { method: "POST" });
     if (!response.ok) return;
-    await refresh(selectedOrgId);
+    await refresh();
   }
 
   async function rotate(keyId: string) {
@@ -78,37 +67,23 @@ export function ApiKeysManager({
     if (!response.ok) return;
 
     setTokenReveal(data?.token || null);
-    await refresh(selectedOrgId);
+    await refresh();
   }
 
   return (
     <div className="grid cols-2">
       <form className="card" onSubmit={createKey}>
         <h3>Create API token</h3>
-        <label>
-          Organization
-          <select
-            value={selectedOrgId}
-            onChange={(event) => {
-              const orgId = event.target.value;
-              setSelectedOrgId(orgId);
-              refresh(orgId);
-            }}
-            required
-          >
-            {organizations.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Label (person/device)
-          <input value={label} onChange={(event) => setLabel(event.target.value)} required />
-        </label>
+        <div className="api-key-create-row">
+          <label>
+            Label (person/device)
+            <input value={label} onChange={(event) => setLabel(event.target.value)} required />
+          </label>
+          <button className="button-inline api-key-create-button" type="submit">
+            Create token
+          </button>
+        </div>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
-        <button type="submit">Create token</button>
         {tokenReveal ? (
           <p>
             One-time token reveal: <code>{tokenReveal}</code>
@@ -118,8 +93,8 @@ export function ApiKeysManager({
 
       <div className="card">
         <h3>Tokens</h3>
-        {filtered.length === 0 ? <p>No tokens</p> : null}
-        {filtered.map((key) => (
+        {apiKeys.length === 0 ? <p>No tokens</p> : null}
+        {apiKeys.map((key) => (
           <div key={key.id} style={{ marginBottom: "0.9rem", borderBottom: "1px solid #e5e7eb", paddingBottom: "0.75rem" }}>
             <strong>{key.label}</strong> <code>{key.prefix}</code>
             <p style={{ margin: "0.15rem 0" }}>Scopes: {key.scopes.join(", ")}</p>
