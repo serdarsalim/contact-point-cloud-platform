@@ -118,7 +118,7 @@ export function ApiKeysManager({
         <div className="api-keys-header">
           <h3>Tokens</h3>
           <button className="button-inline" type="button" onClick={() => setShowCreateModal(true)}>
-            + New Token
+            Add token
           </button>
         </div>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}

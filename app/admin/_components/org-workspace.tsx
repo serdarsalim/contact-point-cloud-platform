@@ -185,7 +185,7 @@ export function OrgWorkspace({
           <div className="org-admins-header">
             <h3>Admins ({admins.length})</h3>
             <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
-              + New Admin
+              Add admin
             </button>
           </div>
           {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
