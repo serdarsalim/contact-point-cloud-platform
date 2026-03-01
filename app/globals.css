@@ -1,0 +1,87 @@
+:root {
+  color-scheme: light;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #1f2937;
+}
+
+a {
+  color: inherit;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #9ca3af;
+  font: inherit;
+}
+
+button {
+  background: #0f766e;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #4b5563;
+}
+
+button.danger {
+  background: #b91c1c;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid.cols-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+code {
+  background: #e5e7eb;
+  border-radius: 6px;
+  padding: 0.15rem 0.35rem;
+}
