@@ -53,6 +53,15 @@ export default async function TemplatesPage({
         isSuperadmin={superadmin}
         organizationName={selectedOrganization.name}
         organizationId={selectedOrganization.id}
+        organizations={
+          superadmin
+            ? undefined
+            : user.memberships.map((membership) => ({
+                id: membership.organizationId,
+                name: membership.organization.name
+              }))
+        }
+        currentOrganizationId={selectedOrganization.id}
         userEmail={user.email}
       />
       <TemplatesManager

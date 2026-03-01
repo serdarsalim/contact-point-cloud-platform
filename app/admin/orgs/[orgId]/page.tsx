@@ -28,7 +28,15 @@ export default async function OrganizationWorkspacePage({
   if (!canAccessOrganization(user, orgId)) {
     return (
       <main className="admin-main">
-        <AdminNavbar isSuperadmin={isSuperadmin(user)} userEmail={user.email} />
+        <AdminNavbar
+          isSuperadmin={isSuperadmin(user)}
+          userEmail={user.email}
+          organizations={user.memberships.map((membership) => ({
+            id: membership.organizationId,
+            name: membership.organization.name
+          }))}
+          currentOrganizationId={orgId}
+        />
         <div className="card">
           <h1>Forbidden</h1>
           <p>You do not have access to this organization workspace.</p>
@@ -63,6 +71,15 @@ export default async function OrganizationWorkspacePage({
         isSuperadmin={superadmin}
         organizationName={organization.name}
         organizationId={organization.id}
+        organizations={
+          superadmin
+            ? undefined
+            : user.memberships.map((membership) => ({
+                id: membership.organizationId,
+                name: membership.organization.name
+              }))
+        }
+        currentOrganizationId={organization.id}
         userEmail={user.email}
       />
       <OrgWorkspace

@@ -19,7 +19,15 @@ export default async function OrganizationsPage() {
   if (!isSuperadmin(user)) {
     return (
       <main className="admin-main">
-        <AdminNavbar isSuperadmin={false} userEmail={user.email} />
+        <AdminNavbar
+          isSuperadmin={false}
+          userEmail={user.email}
+          organizations={user.memberships.map((membership) => ({
+            id: membership.organizationId,
+            name: membership.organization.name
+          }))}
+          currentOrganizationId={user.memberships[0]?.organizationId}
+        />
         <div className="card">
           <h1>Forbidden</h1>
           <p>Only SUPERADMIN can manage organizations.</p>

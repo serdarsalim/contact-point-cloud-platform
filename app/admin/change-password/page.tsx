@@ -13,7 +13,15 @@ export default async function ChangePasswordPage() {
 
   return (
     <main className="admin-main">
-      <AdminNavbar isSuperadmin={isSuperadmin(user)} userEmail={user.email} />
+      <AdminNavbar
+        isSuperadmin={isSuperadmin(user)}
+        userEmail={user.email}
+        organizations={user.memberships.map((membership) => ({
+          id: membership.organizationId,
+          name: membership.organization.name
+        }))}
+        currentOrganizationId={user.memberships[0]?.organizationId}
+      />
       <ChangePasswordForm forceChange={user.mustChangePassword} />
     </main>
   );

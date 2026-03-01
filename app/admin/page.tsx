@@ -23,7 +23,15 @@ export default async function AdminHomePage() {
 
   return (
     <main className="admin-main">
-      <AdminNavbar isSuperadmin={superadmin} userEmail={user.email} />
+      <AdminNavbar
+        isSuperadmin={superadmin}
+        userEmail={user.email}
+        organizations={user.memberships.map((membership) => ({
+          id: membership.organizationId,
+          name: membership.organization.name
+        }))}
+        currentOrganizationId={user.memberships[0]?.organizationId}
+      />
       <div className="card">
         <h3>Organization Access</h3>
         {user.memberships.length === 0 ? <p>No organizations assigned.</p> : null}
