@@ -163,8 +163,8 @@ export function OrgWorkspace({
   return (
     <section className="org-workspace-shell">
       <div className="card org-workspace-stats-card">
-        <h3>Stats</h3>
         <div className="org-stats-grid">
+          <div className="org-stats-label">Stats</div>
           <div className="org-stat-tile">
             <span className="org-stat-label">Templates</span>
             <strong className="org-stat-value">{org.templateCount}</strong>
