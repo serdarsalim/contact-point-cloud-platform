@@ -33,6 +33,7 @@ export function AdminNavbar({
     organizationName || navOrganizations.find((org) => org.id === activeOrganizationId)?.name;
 
   const manageOrgHref = activeOrganizationId ? `/admin/orgs/${activeOrganizationId}` : "/admin";
+  const templatesHref = activeOrganizationId ? `/admin/templates?orgId=${activeOrganizationId}` : "/admin/templates";
   const showManageOrgLink = !isSuperadmin || Boolean(organizationId);
 
   const isManageOrgActive =
@@ -87,7 +88,7 @@ export function AdminNavbar({
             </Link>
           ) : null}
           {!hideOrgContextLinks ? (
-            <Link className={`admin-nav-link ${isTemplatesActive ? "active" : ""}`} href="/admin/templates">
+            <Link className={`admin-nav-link ${isTemplatesActive ? "active" : ""}`} href={templatesHref}>
               Templates
             </Link>
           ) : null}
