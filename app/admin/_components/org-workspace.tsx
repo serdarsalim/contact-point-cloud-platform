@@ -149,7 +149,7 @@ export function OrgWorkspace({
   return (
     <div className="grid cols-2">
       <div className="card">
-        <h3>Organization stats</h3>
+        <h3>Stats</h3>
         <div className="org-stats-grid">
           <div className="org-stat-tile">
             <span className="org-stat-label">Templates</span>
@@ -168,9 +168,9 @@ export function OrgWorkspace({
 
       <div className="card">
         <div className="org-admins-header">
-          <h3>Org admins ({admins.length})</h3>
+          <h3>Admins ({admins.length})</h3>
           <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
-            Create new admin
+            + New Admin
           </button>
         </div>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
