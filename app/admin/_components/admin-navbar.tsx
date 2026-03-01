@@ -55,7 +55,7 @@ export function AdminNavbar({
   }
 
   return (
-    <nav className="admin-navbar card" aria-label="Admin navigation">
+    <nav className="admin-navbar" aria-label="Admin navigation">
       <div className="admin-navbar-inner">
         <div className="admin-navbar-org">
           {showOrgSwitcher ? (
