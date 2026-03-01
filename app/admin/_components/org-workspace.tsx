@@ -192,22 +192,22 @@ export function OrgWorkspace({
               <p className="org-admin-identity">
                 <strong>{admin.user.username}</strong> ({admin.user.email})
               </p>
-              <div className="org-admin-actions">
-                {canResetAdminPasswords ? (
+                <div className="org-admin-actions">
+                  {canResetAdminPasswords ? (
+                    <button
+                      className="org-admin-link-button"
+                      type="button"
+                      onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                    >
+                      Reset password
+                    </button>
+                  ) : null}
                   <button
-                    className="secondary button-inline"
+                    className="org-admin-link-button org-admin-link-button-danger"
                     type="button"
-                    onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                    onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
                   >
-                    Reset password
-                  </button>
-                ) : null}
-                <button
-                  className="danger button-inline"
-                  type="button"
-                  onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
-                >
-                  Delete user
+                    Delete user
                 </button>
               </div>
             </div>

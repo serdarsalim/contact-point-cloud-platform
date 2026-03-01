@@ -10,6 +10,48 @@ The extension must support two parallel sources:
 - Local templates (existing behavior, editable in extension)
 - Cloud templates (managed in web app, read-only in extension)
 
+## Current Status (2026-03-01)
+
+### Implemented
+- Next.js App Router + TypeScript scaffold is in place and actively used.
+- Prisma schema and migrations are implemented for:
+  - `User`, `Organization`, `OrganizationMember`, `OrganizationApiKey`, `Template`, `AuditLog`
+  - Global `User.role` model (`SUPERADMIN` / `ADMIN`) has been added and migrated.
+- Session auth is implemented for admin web routes.
+- Bearer token auth is implemented for extension routes.
+- Extension read APIs are implemented:
+  - `GET /api/v1/extension/me`
+  - `GET /api/v1/extension/templates?type=EMAIL|WHATSAPP|NOTE`
+- API key lifecycle is implemented:
+  - hash-only storage
+  - one-time reveal on create/rotate
+  - revoke/rotate flows
+  - `lastUsedAt` updates on successful token-auth requests
+- Org and admin management are implemented:
+  - superadmin org create/delete
+  - org admin create/delete
+  - superadmin admin-password reset
+  - block deletion of last org `ADMIN`
+- First-login password change flow is implemented (`mustChangePassword`).
+- Audit logging is implemented for key admin actions.
+- Admin UI has been iterated and now includes:
+  - context-aware navbar
+  - superadmin all-org directory with left sidebar
+  - org workspace with stats + admins
+  - `+ New Admin` modal flow
+  - redesigned templates workspace (sidebar + editor)
+  - redesigned API token creation/list actions
+
+### Current RBAC Decision (Important)
+- `SUPERADMIN` is a **global user role** (`User.role = SUPERADMIN`) and is **not org membership-based**.
+- `ADMIN` remains org-scoped via `OrganizationMember`.
+- SUPERADMIN has full access across all orgs.
+
+### Pending / Next
+- Extension-side cloud integration (cache keys, merge strategy, source filter UI) is still pending in the extension repo.
+- End-to-end smoke test runbook across extension + cloud backend still needs to be documented and executed.
+- Optional hardening (rate limiting, stronger audit/reporting, additional guardrails) can be added next.
+
 ## Product Requirements
 
 ### Core Requirements
@@ -23,9 +65,11 @@ The extension must support two parallel sources:
 ### Roles
 Only two web roles are required:
 - `SUPERADMIN`
+  - Global role on `User` (not tied to one org membership)
   - Create/delete organizations
   - Assign/revoke org admins
   - View all orgs
+  - Full access to templates and API keys across all orgs
 - `ADMIN`
   - Manage templates for their org
   - Manage org API tokens for extension consumers
@@ -71,7 +115,7 @@ Security requirements:
 ### Entities
 - `User`
 - `Organization`
-- `OrganizationMember` (role mapping: `SUPERADMIN`/`ADMIN`)
+- `OrganizationMember` (active org memberships for `ADMIN`)
 - `OrganizationApiKey`
 - `Template`
 
@@ -107,8 +151,8 @@ Rules:
 - Derive org from token, never trust client org input
 
 ### Admin App APIs (Session/OAuth Auth)
-- Org CRUD (`SUPERADMIN`)
-- Org membership/admin assignment (`SUPERADMIN`)
+- Org CRUD (`SUPERADMIN`, global role)
+- Org membership/admin assignment (`SUPERADMIN` globally, `ADMIN` within accessible org)
 - Template CRUD (`ADMIN` in own org; `SUPERADMIN` globally)
 - API key create/list/revoke/rotate (`ADMIN` own org; `SUPERADMIN` all)
 
@@ -145,25 +189,16 @@ Rules:
 ## Phase 2 Project Plan
 
 ### Milestone 1: Backend Foundation
-- Initialize Next.js app
-- Configure Prisma + Neon
-- Add base schema and first migration
-- Add RBAC middleware
+- Done
 
 ### Milestone 2: Org and Access Control
-- Build SUPERADMIN org management
-- Build org admin assignment
-- Build ADMIN org-scoped access guards
+- Done (with global `SUPERADMIN` role model)
 
 ### Milestone 3: Cloud Template Management (Web)
-- Build template list/create/edit/delete in Next.js
-- Restrict to org scope for ADMIN
+- Done
 
 ### Milestone 4: API Key Lifecycle
-- Create labeled org API keys
-- One-time token reveal
-- Revoke and rotate flows
-- Last-used tracking
+- Done
 
 ### Milestone 5: Extension Cloud Read Integration
 - Add settings fields for org token
@@ -200,11 +235,11 @@ Rules:
 - Preserve same RBAC and org-token model
 
 ## Kickoff Checklist
-1. Create repository and initialize Next.js app.
-2. Set up Neon project and `DATABASE_URL`.
-3. Add Prisma schema and run first migration.
-4. Implement RBAC scaffolding with seed users/roles.
-5. Implement org + key management APIs/UI.
-6. Implement extension read-only cloud endpoints.
-7. Integrate extension settings + cloud cache key isolation.
-8. Execute manual smoke tests across local/cloud flows.
+1. Repository and Next.js app initialized. Done.
+2. Neon project + `DATABASE_URL` setup. In progress per environment.
+3. Prisma schema + migrations implemented. Done.
+4. RBAC scaffolding with seed users/roles implemented. Done.
+5. Org + key management APIs/UI implemented. Done.
+6. Extension read-only cloud endpoints implemented. Done.
+7. Extension settings + cloud cache key isolation integration. Pending (extension repo).
+8. Manual smoke tests across local/cloud flows. Pending full E2E pass.

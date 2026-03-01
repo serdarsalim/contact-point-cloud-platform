@@ -83,6 +83,31 @@ button.danger {
   flex-wrap: wrap;
 }
 
+.org-admin-link-button {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #1f2937;
+  text-decoration: underline;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.org-admin-link-button:hover {
+  color: #0f172a;
+}
+
+.org-admin-link-button-danger {
+  color: #b91c1c;
+}
+
+.org-admin-link-button-danger:hover {
+  color: #991b1b;
+}
+
 .org-admins-header {
   display: flex;
   align-items: center;
@@ -416,20 +441,106 @@ button.danger {
   color: #b91c1c;
 }
 
-.api-key-create-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
+.api-keys-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.api-key-create-row label {
-  margin-bottom: 0;
+.api-keys-header h3 {
+  margin: 0;
 }
 
-.api-key-create-button {
+.api-keys-card {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.api-keys-table {
+  border-top: 1px solid #e5e7eb;
+}
+
+.api-keys-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.api-keys-row-head {
+  font-weight: 700;
+  color: #334155;
+}
+
+.api-keys-name-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.api-keys-actions-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.api-key-action-link {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #1f2937;
+  text-decoration: underline;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.api-key-action-link:hover {
+  color: #0f172a;
+}
+
+.api-key-action-link-danger {
+  color: #b91c1c;
+}
+
+.api-key-action-link-danger:hover {
+  color: #991b1b;
+}
+
+.change-password-shell {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+}
+
+.change-password-card {
+  width: min(760px, 100%);
+  padding: 1.25rem;
+}
+
+.change-password-card h2 {
+  margin-top: 0;
   margin-bottom: 0.75rem;
-  padding: 0.6rem 0.9rem;
+}
+
+.change-password-note {
+  margin-top: 0;
+  margin-bottom: 0.9rem;
+  color: #334155;
+}
+
+.change-password-error {
+  color: #b91c1c;
+  margin-top: 0;
 }
 
 @media (min-width: 900px) {
@@ -640,20 +751,21 @@ code {
 }
 
 @media (max-width: 1024px) {
+  .api-keys-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .api-keys-row-head {
+    display: none;
+  }
+
   .org-stats-grid {
     grid-template-columns: 1fr;
   }
 
   .orgs-layout {
     grid-template-columns: 1fr;
-  }
-
-  .api-key-create-row {
-    grid-template-columns: 1fr;
-  }
-
-  .api-key-create-button {
-    width: 100%;
   }
 
   .orgs-sidebar,

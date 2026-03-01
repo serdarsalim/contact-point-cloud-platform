@@ -20,6 +20,7 @@ export function ApiKeysManager({
   initialApiKeys: ApiKey[];
 }) {
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [label, setLabel] = useState("");
   const [tokenReveal, setTokenReveal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +52,7 @@ export function ApiKeysManager({
 
     setLabel("");
     setTokenReveal(data?.token || null);
+    setShowCreateModal(false);
     await refresh();
   }
 
@@ -70,51 +72,84 @@ export function ApiKeysManager({
     await refresh();
   }
 
+  function closeCreateModal() {
+    setShowCreateModal(false);
+    setLabel("");
+    setError(null);
+  }
+
   return (
-    <div className="grid cols-2">
-      <form className="card" onSubmit={createKey}>
-        <h3>Create API token</h3>
-        <div className="api-key-create-row">
-          <label>
-            Label (person/device)
-            <input value={label} onChange={(event) => setLabel(event.target.value)} required />
-          </label>
-          <button className="button-inline api-key-create-button" type="submit">
-            Create token
+    <>
+      <div className="card api-keys-card">
+        <div className="api-keys-header">
+          <h3>Tokens</h3>
+          <button className="button-inline" type="button" onClick={() => setShowCreateModal(true)}>
+            + New Token
           </button>
         </div>
-        {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         {tokenReveal ? (
           <p>
             One-time token reveal: <code>{tokenReveal}</code>
           </p>
         ) : null}
-      </form>
-
-      <div className="card">
-        <h3>Tokens</h3>
         {apiKeys.length === 0 ? <p>No tokens</p> : null}
-        {apiKeys.map((key) => (
-          <div key={key.id} style={{ marginBottom: "0.9rem", borderBottom: "1px solid #e5e7eb", paddingBottom: "0.75rem" }}>
-            <strong>{key.label}</strong> <code>{key.prefix}</code>
-            <p style={{ margin: "0.15rem 0" }}>Scopes: {key.scopes.join(", ")}</p>
-            <p style={{ margin: "0.15rem 0" }}>
-              Last used: {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString() : "Never"}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-              <p style={{ margin: 0 }}>Status: {key.revokedAt ? "Revoked" : "Active"}</p>
-              <button className="secondary button-inline" type="button" onClick={() => rotate(key.id)}>
-                Rotate
-              </button>
-              {!key.revokedAt ? (
-                <button className="danger button-inline" type="button" onClick={() => revoke(key.id)}>
-                  Revoke
-                </button>
-              ) : null}
+        {apiKeys.length > 0 ? (
+          <div className="api-keys-table">
+            <div className="api-keys-row api-keys-row-head">
+              <span>Name</span>
+              <span>Last used</span>
+              <span>Status</span>
+              <span>Actions</span>
             </div>
+            {apiKeys.map((key) => (
+              <div key={key.id} className="api-keys-row">
+                <div className="api-keys-name-cell">
+                  <strong>{key.label}</strong> <code>{key.prefix}</code>
+                </div>
+                <span>{key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString() : "Never"}</span>
+                <span>{key.revokedAt ? "Revoked" : "Active"}</span>
+                <div className="api-keys-actions-cell">
+                  <button className="api-key-action-link" type="button" onClick={() => rotate(key.id)}>
+                    Rotate
+                  </button>
+                  {!key.revokedAt ? (
+                    <button
+                      className="api-key-action-link api-key-action-link-danger"
+                      type="button"
+                      onClick={() => revoke(key.id)}
+                    >
+                      Revoke
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        ) : null}
       </div>
-    </div>
+
+      {showCreateModal ? (
+        <div className="admin-modal-backdrop" onClick={closeCreateModal}>
+          <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3>Create API token</h3>
+              <button className="secondary button-inline" type="button" onClick={closeCreateModal}>
+                Close
+              </button>
+            </div>
+            <form onSubmit={createKey}>
+              <label>
+                Label (person/device)
+                <input value={label} onChange={(event) => setLabel(event.target.value)} required />
+              </label>
+              {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
+              <button className="button-inline" type="submit">
+                Create token
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

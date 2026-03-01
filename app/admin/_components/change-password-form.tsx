@@ -35,40 +35,44 @@ export function ChangePasswordForm({ forceChange }: { forceChange: boolean }) {
   }
 
   return (
-    <form className="card" onSubmit={handleSubmit}>
-      <h2>{forceChange ? "Change Your Password to Continue" : "Change Password"}</h2>
-      {forceChange ? <p>Your current password is temporary. Set your own password now.</p> : null}
-      <label>
-        Current password
-        <input
-          type="password"
-          value={currentPassword}
-          onChange={(event) => setCurrentPassword(event.target.value)}
-          required
-        />
-      </label>
-      <label>
-        New password
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(event) => setNewPassword(event.target.value)}
-          required
-        />
-      </label>
-      <label>
-        Confirm new password
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          required
-        />
-      </label>
-      {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
-      <button type="submit" disabled={isSaving}>
-        {isSaving ? "Saving..." : "Update password"}
-      </button>
-    </form>
+    <section className="change-password-shell">
+      <form className="card change-password-card" onSubmit={handleSubmit}>
+        <h2>{forceChange ? "Change Your Password to Continue" : "Change Password"}</h2>
+        {forceChange ? (
+          <p className="change-password-note">Your current password is temporary. Set your own password now.</p>
+        ) : null}
+        <label>
+          Current password
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(event) => setCurrentPassword(event.target.value)}
+            required
+          />
+        </label>
+        <label>
+          New password
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Confirm new password
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            required
+          />
+        </label>
+        {error ? <p className="change-password-error">{error}</p> : null}
+        <button type="submit" disabled={isSaving}>
+          {isSaving ? "Saving..." : "Update password"}
+        </button>
+      </form>
+    </section>
   );
 }

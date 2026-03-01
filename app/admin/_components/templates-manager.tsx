@@ -94,7 +94,7 @@ export function TemplatesManager({
     setActiveTemplateId(null);
     setDraft(emptyDraft(nextType));
     setError(null);
-    setStatus("Creating new template");
+    setStatus("");
   }
 
   async function refresh(): Promise<Template[] | null> {
