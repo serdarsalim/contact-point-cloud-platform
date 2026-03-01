@@ -52,6 +52,7 @@ export default async function TemplatesPage({
       <AdminNavbar
         isSuperadmin={superadmin}
         organizationName={selectedOrganization.name}
+        organizationId={selectedOrganization.id}
         userEmail={user.email}
       />
       <TemplatesManager

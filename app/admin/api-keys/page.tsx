@@ -52,6 +52,7 @@ export default async function ApiKeysPage({
       <AdminNavbar
         isSuperadmin={superadmin}
         organizationName={selectedOrganization.name}
+        organizationId={selectedOrganization.id}
         userEmail={user.email}
       />
       <ApiKeysManager

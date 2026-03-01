@@ -174,13 +174,12 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
     <section className="orgs-layout">
       <aside className="card orgs-sidebar">
         <div className="orgs-sidebar-header">
-          <h3>Organizations</h3>
           <button
             className="button-inline orgs-create-toggle"
             type="button"
             onClick={() => setShowCreateForm((prev) => !prev)}
           >
-            {showCreateForm ? "Close" : "Create organization"}
+            {showCreateForm ? "Close" : "+ Add"}
           </button>
         </div>
 
@@ -228,8 +227,10 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
               onClick={() => setSelectedOrgId(org.id)}
             >
               <span className="orgs-list-item-name">{org.name}</span>
-              <span className="orgs-list-item-meta">{org.slug}</span>
-              <span className="orgs-list-item-meta">{org.memberCount} members</span>
+              <span className="orgs-list-item-meta-row">
+                <span className="orgs-list-item-meta">{org.slug}</span>
+                <span className="orgs-list-item-meta">{org.memberCount} members</span>
+              </span>
             </button>
           ))}
         </div>

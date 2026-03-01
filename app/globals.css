@@ -348,6 +348,13 @@ button.danger {
   color: #475569;
 }
 
+.orgs-list-item-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .orgs-empty {
   margin-top: 0.35rem;
 }

@@ -60,6 +60,7 @@ export default async function OrganizationWorkspacePage({
       <AdminNavbar
         isSuperadmin={superadmin}
         organizationName={organization.name}
+        organizationId={organization.id}
         userEmail={user.email}
       />
       <OrgWorkspace
