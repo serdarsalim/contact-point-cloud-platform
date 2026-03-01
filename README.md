@@ -35,6 +35,7 @@ Proprietary software. All rights reserved.
 - One-time reveal token creation and rotation behavior
 - `lastUsedAt` updates on successful extension token-auth requests
 - Basic audit logging for org/admin/template/API-key management actions
+- First-login password change enforcement for generated admin passwords
 
 ## Setup
 
@@ -183,6 +184,7 @@ Success:
 
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
+- `POST /api/auth/change-password`
 - `GET /api/admin/me`
 - `GET/POST /api/admin/orgs`
 - `PATCH/DELETE /api/admin/orgs/:orgId`

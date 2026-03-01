@@ -16,6 +16,10 @@ export default async function ApiKeysPage({
     redirect("/admin/login");
   }
 
+  if (user.mustChangePassword) {
+    redirect("/admin/change-password");
+  }
+
   const { orgId: requestedOrgId } = await searchParams;
 
   const organizations = isSuperadmin(user)

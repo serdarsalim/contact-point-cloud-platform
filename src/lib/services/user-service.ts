@@ -14,7 +14,8 @@ export async function createUserWithGeneratedPassword(input: {
     data: {
       username: input.username.trim(),
       email: input.email.trim().toLowerCase(),
-      passwordHash: hashPassword(generatedPassword)
+      passwordHash: hashPassword(generatedPassword),
+      mustChangePassword: true
     }
   });
 
@@ -78,7 +79,8 @@ export async function createOrganizationAdminWithGeneratedPassword(input: {
       data: {
         username: input.username.trim(),
         email: input.email.trim().toLowerCase(),
-        passwordHash: hashPassword(generatedPassword)
+        passwordHash: hashPassword(generatedPassword),
+        mustChangePassword: true
       }
     });
 
@@ -125,7 +127,8 @@ export async function resetOrganizationAdminPassword(input: {
   const user = await prisma.user.update({
     where: { id: input.userId },
     data: {
-      passwordHash: hashPassword(generatedPassword)
+      passwordHash: hashPassword(generatedPassword),
+      mustChangePassword: true
     }
   });
 

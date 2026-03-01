@@ -42,13 +42,26 @@ export async function getSessionUser() {
   return user;
 }
 
-export async function requireSessionUser() {
+export async function requireSessionUser(options?: { allowPasswordChangePending?: boolean }) {
   const user = await getSessionUser();
 
   if (!user) {
     return {
       user: null,
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    };
+  }
+
+  if (user.mustChangePassword && !options?.allowPasswordChangePending) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        {
+          error: "Password change required",
+          code: "PASSWORD_CHANGE_REQUIRED"
+        },
+        { status: 403 }
+      )
     };
   }
 

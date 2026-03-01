@@ -12,6 +12,10 @@ export default async function UsersPage() {
     redirect("/admin/login");
   }
 
+  if (user.mustChangePassword) {
+    redirect("/admin/change-password");
+  }
+
   if (!isSuperadmin(user)) {
     return (
       <main>

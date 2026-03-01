@@ -13,6 +13,10 @@ export default async function AdminHomePage() {
     redirect("/admin/login");
   }
 
+  if (user.mustChangePassword) {
+    redirect("/admin/change-password");
+  }
+
   const superadmin = isSuperadmin(user);
   const organizations = superadmin ? await listOrganizations() : [];
 
@@ -24,10 +28,8 @@ export default async function AdminHomePage() {
           <LogoutButton />
         </div>
         <p>
-          Signed in as <strong>{user.username}</strong> ({user.email})
+          Signed in as <strong>{user.username}</strong> ({user.email}) - {superadmin ? "Superadmin" : "Admin"}
         </p>
-        <p>Role: {superadmin ? "SUPERADMIN" : "ADMIN"}</p>
-        {superadmin ? <p>Manage organizations and org admins below.</p> : null}
         {!superadmin ? (
           <div className="grid cols-3">
             <Link href="/admin/templates">Template Manager</Link>

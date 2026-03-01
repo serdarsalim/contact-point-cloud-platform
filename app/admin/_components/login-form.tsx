@@ -30,7 +30,8 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/admin");
+    const data = (await response.json()) as { user?: { mustChangePassword?: boolean } };
+    router.push(data.user?.mustChangePassword ? "/admin/change-password" : "/admin");
     router.refresh();
   }
 

@@ -50,7 +50,8 @@ export async function createOrganizationWithInitialAdmin(input: {
       data: {
         username: input.adminUsername.trim(),
         email: input.adminEmail.trim().toLowerCase(),
-        passwordHash: hashPassword(generatedPassword)
+        passwordHash: hashPassword(generatedPassword),
+        mustChangePassword: true
       }
     });
 

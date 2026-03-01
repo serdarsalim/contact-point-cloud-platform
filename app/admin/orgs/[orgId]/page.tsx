@@ -18,6 +18,10 @@ export default async function OrganizationWorkspacePage({
     redirect("/admin/login");
   }
 
+  if (user.mustChangePassword) {
+    redirect("/admin/change-password");
+  }
+
   const { orgId } = await params;
 
   if (!canAccessOrganization(user, orgId)) {

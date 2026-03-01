@@ -6,7 +6,7 @@ export default async function LoginPage() {
   const user = await getSessionUser();
 
   if (user) {
-    redirect("/admin");
+    redirect(user.mustChangePassword ? "/admin/change-password" : "/admin");
   }
 
   return (

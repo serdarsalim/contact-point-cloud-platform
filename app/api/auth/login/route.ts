@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       id: user.id,
       username: user.username,
       email: user.email,
+      mustChangePassword: user.mustChangePassword,
       memberships: user.memberships
     }
   });
