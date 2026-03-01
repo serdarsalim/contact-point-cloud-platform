@@ -173,37 +173,10 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
   return (
     <section className="orgs-layout">
       <aside className="card orgs-sidebar">
-        <h3>Organizations</h3>
-        <label>
-          Search organizations
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by name or slug"
-          />
-        </label>
-        <div className="orgs-list">
-          {filteredOrgs.length === 0 ? <p className="orgs-empty">No organizations found.</p> : null}
-          {filteredOrgs.map((org) => (
-            <button
-              key={org.id}
-              type="button"
-              className={`orgs-list-item ${org.id === selectedOrgId ? "active" : ""}`}
-              onClick={() => setSelectedOrgId(org.id)}
-            >
-              <span className="orgs-list-item-name">{org.name}</span>
-              <span className="orgs-list-item-meta">{org.slug}</span>
-              <span className="orgs-list-item-meta">{org.memberCount} members</span>
-            </button>
-          ))}
-        </div>
-      </aside>
-
-      <section className="card orgs-workspace">
-        <div className="orgs-workspace-header">
-          <h3>{selectedOrg ? selectedOrg.name : "Organization workspace"}</h3>
+        <div className="orgs-sidebar-header">
+          <h3>Organizations</h3>
           <button
-            className="button-inline"
+            className="button-inline orgs-create-toggle"
             type="button"
             onClick={() => setShowCreateForm((prev) => !prev)}
           >
@@ -237,6 +210,45 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
 
         {error ? <p className="orgs-error">{error}</p> : null}
 
+        <label>
+          Search organizations
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by name or slug"
+          />
+        </label>
+        <div className="orgs-list">
+          {filteredOrgs.length === 0 ? <p className="orgs-empty">No organizations found.</p> : null}
+          {filteredOrgs.map((org) => (
+            <button
+              key={org.id}
+              type="button"
+              className={`orgs-list-item ${org.id === selectedOrgId ? "active" : ""}`}
+              onClick={() => setSelectedOrgId(org.id)}
+            >
+              <span className="orgs-list-item-name">{org.name}</span>
+              <span className="orgs-list-item-meta">{org.slug}</span>
+              <span className="orgs-list-item-meta">{org.memberCount} members</span>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <section className="card orgs-workspace">
+        <div className="orgs-workspace-header">
+          <h3>{selectedOrg ? selectedOrg.name : "Organization workspace"}</h3>
+          {selectedOrg ? (
+            <button
+              className="danger button-inline"
+              type="button"
+              onClick={() => deleteOrg(selectedOrg.id, selectedOrg.name)}
+            >
+              Delete org
+            </button>
+          ) : null}
+        </div>
+
         {selectedOrg ? (
           <div className="orgs-workspace-content">
             <div className="orgs-workspace-links">
@@ -258,10 +270,6 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
                   ))
                 : null}
             </div>
-
-            <button className="danger button-inline" type="button" onClick={() => deleteOrg(selectedOrg.id, selectedOrg.name)}>
-              Delete org
-            </button>
           </div>
         ) : (
           <p>Select an organization from the left sidebar.</p>

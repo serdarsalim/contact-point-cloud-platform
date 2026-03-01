@@ -203,8 +203,9 @@ button.danger {
 
 .orgs-layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 360px minmax(0, 980px);
   gap: 1rem;
+  justify-content: start;
 }
 
 .orgs-sidebar {
@@ -215,7 +216,19 @@ button.danger {
 }
 
 .orgs-sidebar h3 {
-  margin: 0 0 0.75rem;
+  margin: 0;
+}
+
+.orgs-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.orgs-create-toggle {
+  padding: 0.4rem 0.6rem;
 }
 
 .orgs-list {
@@ -263,6 +276,7 @@ button.danger {
 .orgs-workspace {
   margin-bottom: 0;
   min-height: calc(100vh - 9rem);
+  width: 100%;
 }
 
 .orgs-workspace-header {
