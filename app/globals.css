@@ -385,9 +385,10 @@ button.danger {
   color: #0f172a;
   border: 1px solid #d1d5db;
   border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.18rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0;
   padding: 0.65rem 0.7rem;
 }
@@ -403,6 +404,29 @@ button.danger {
 
 .orgs-list-item-name {
   font-weight: 700;
+}
+
+.orgs-list-item-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  text-decoration: none;
+  font-weight: 700;
+  color: #334155;
+  padding: 0.1rem 0.2rem;
+  border-radius: 6px;
+}
+
+.orgs-list-item-open svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.orgs-list-item-open:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .orgs-empty {
@@ -920,7 +944,7 @@ code {
   max-width: none;
   width: 100%;
   margin: 0;
-  padding: 1rem;
+  padding: 0 1.25rem 2rem;
 }
 
 @media (max-width: 1024px) {

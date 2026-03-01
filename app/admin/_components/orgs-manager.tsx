@@ -301,14 +301,12 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
 
         {error ? <p className="orgs-error">{error}</p> : null}
 
-        <label>
-          Search organizations
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by name"
-          />
-        </label>
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search by name"
+          aria-label="Search organizations"
+        />
         <div className="orgs-list">
           {filteredOrgs.length === 0 ? <p className="orgs-empty">No organizations found.</p> : null}
           {filteredOrgs.map((org) => (
@@ -319,6 +317,24 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
               onClick={() => setSelectedOrgId(org.id)}
             >
               <span className="orgs-list-item-name">{org.name}</span>
+              <Link
+                href={`/admin/orgs/${org.id}`}
+                className="orgs-list-item-open"
+                aria-label={`Open ${org.name} workspace`}
+                title={`Open ${org.name} workspace`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path
+                    d="M12.5 3.75h3.75V7.5m0-3.75-6.25 6.25m4.375-4.375V13.75a2.5 2.5 0 0 1-2.5 2.5H6.25a2.5 2.5 0 0 1-2.5-2.5V8.125a2.5 2.5 0 0 1 2.5-2.5h8.125"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
             </button>
           ))}
         </div>
