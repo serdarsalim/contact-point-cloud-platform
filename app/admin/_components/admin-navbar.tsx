@@ -84,7 +84,7 @@ export function AdminNavbar({
           ) : null}
           {showManageOrgLink ? (
             <Link className={`admin-nav-link ${isManageOrgActive ? "active" : ""}`} href={manageOrgHref}>
-              Manage Org
+              Workspace
             </Link>
           ) : null}
           {!hideOrgContextLinks ? (
@@ -94,7 +94,7 @@ export function AdminNavbar({
           ) : null}
         </div>
         <div className="admin-navbar-account">
-          <span>Signed in as {userEmail}</span>
+          <span>{userEmail}</span>
           <LogoutButton variant="link" />
         </div>
       </div>
