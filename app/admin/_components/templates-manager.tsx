@@ -51,6 +51,10 @@ function typePillClass(type: TemplateType): string {
   return "type-pill type-pill-note";
 }
 
+function templateTypeLabel(type: TemplateType): string {
+  return type.toLowerCase();
+}
+
 export function TemplatesManager({
   organizationId,
   initialTemplates,
@@ -61,6 +65,7 @@ export function TemplatesManager({
   const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>("ALL");
+  const [showTypePickerModal, setShowTypePickerModal] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialTemplates[0]?.id || null);
   const [draft, setDraft] = useState<TemplateDraft>(
     initialTemplates[0] ? draftFromTemplate(initialTemplates[0]) : emptyDraft("EMAIL")
@@ -90,11 +95,17 @@ export function TemplatesManager({
   }
 
   function startNewTemplate() {
-    const nextType = draft.type || "EMAIL";
-    setActiveTemplateId(null);
-    setDraft(emptyDraft(nextType));
+    setShowTypePickerModal(true);
     setError(null);
     setStatus("");
+  }
+
+  function beginCreateTemplate(type: TemplateType) {
+    setActiveTemplateId(null);
+    setDraft(emptyDraft(type));
+    setError(null);
+    setStatus("");
+    setShowTypePickerModal(false);
   }
 
   async function refresh(): Promise<Template[] | null> {
@@ -251,7 +262,11 @@ export function TemplatesManager({
         <form className="templates-editor" onSubmit={saveTemplate}>
           <div className="templates-editor-top">
             <div>
-              <h3>{draft.id ? "Edit template" : "Create template"}</h3>
+              <h3>
+                {draft.id
+                  ? `Edit ${templateTypeLabel(draft.type)} template`
+                  : `Create ${templateTypeLabel(draft.type)} template`}
+              </h3>
               <p className="templates-editor-status">{status}</p>
             </div>
             <div className="templates-editor-actions">
@@ -268,27 +283,6 @@ export function TemplatesManager({
 
           <div className="templates-meta-grid">
             <label>
-              Type
-              <select
-                value={draft.type}
-                onChange={(event) => {
-                  const nextType = event.target.value as TemplateType;
-                  setDraft((prev) => ({
-                    ...prev,
-                    type: nextType,
-                    subject: nextType === "EMAIL" ? prev.subject : ""
-                  }));
-                }}
-              >
-                {typeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
               Name
               <input
                 value={draft.name}
@@ -297,18 +291,18 @@ export function TemplatesManager({
               />
             </label>
 
-            <label>
-              Subject (email only)
-              <input
-                value={draft.subject}
-                onChange={(event) => setDraft((prev) => ({ ...prev, subject: event.target.value }))}
-                disabled={draft.type !== "EMAIL"}
-                placeholder={draft.type === "EMAIL" ? "Email subject" : "Only for EMAIL"}
-              />
-            </label>
+            {draft.type === "EMAIL" ? (
+              <label className="templates-subject-field">
+                Subject
+                <input
+                  value={draft.subject}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, subject: event.target.value }))}
+                  placeholder="Email subject"
+                />
+              </label>
+            ) : null}
           </div>
 
-          <label>Body</label>
           {draft.type === "EMAIL" ? (
             <div className="templates-body-editor">
               <TinyMceEditor
@@ -319,11 +313,11 @@ export function TemplatesManager({
             </div>
           ) : (
             <textarea
-              className="templates-textarea"
+              className="templates-textarea templates-textarea-compact"
               value={draft.body}
               onChange={(event) => setDraft((prev) => ({ ...prev, body: event.target.value }))}
               required
-              rows={14}
+              rows={8}
               placeholder={`${draft.type} templates use plain text`}
             />
           )}
@@ -331,6 +325,35 @@ export function TemplatesManager({
           {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         </form>
       </section>
+
+      {showTypePickerModal ? (
+        <div className="admin-modal-backdrop" onClick={() => setShowTypePickerModal(false)}>
+          <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3>Select template type</h3>
+              <button
+                className="secondary button-inline"
+                type="button"
+                onClick={() => setShowTypePickerModal(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="template-type-picker-grid">
+              {typeOptions.map((option) => (
+                <button
+                  key={option}
+                  className="template-type-picker-button"
+                  type="button"
+                  onClick={() => beginCreateTemplate(option)}
+                >
+                  {option === "WHATSAPP" ? "WhatsApp" : option === "NOTE" ? "Note" : "Email"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

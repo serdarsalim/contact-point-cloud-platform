@@ -131,7 +131,7 @@ If your Neon DB is not reachable yet, schema and migration files are already sca
 
 ### Rotate
 
-- Existing token is revoked.
+- Existing token row is deleted.
 - New token row is created.
 - New raw token is shown once.
 

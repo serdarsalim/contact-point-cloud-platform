@@ -56,19 +56,37 @@ export function ApiKeysManager({
     await refresh();
   }
 
-  async function revoke(keyId: string) {
-    const response = await fetch(`/api/admin/api-keys/${keyId}/revoke`, { method: "POST" });
-    if (!response.ok) return;
+  async function rotate(keyId: string) {
+    setError(null);
+
+    const response = await fetch(`/api/admin/api-keys/${keyId}/rotate`, { method: "POST" });
+    const data = (await response.json().catch(() => null)) as { token?: string; error?: string } | null;
+
+    if (!response.ok) {
+      setError(data?.error || "Failed to rotate token");
+      return;
+    }
+
+    setTokenReveal(data?.token || null);
     await refresh();
   }
 
-  async function rotate(keyId: string) {
-    const response = await fetch(`/api/admin/api-keys/${keyId}/rotate`, { method: "POST" });
-    const data = (await response.json().catch(() => null)) as { token?: string } | null;
+  async function deleteKey(keyId: string, labelValue: string) {
+    const confirmed = window.confirm(
+      `Delete token ${labelValue}? This permanently removes this row from the list.`
+    );
+    if (!confirmed) return;
 
-    if (!response.ok) return;
+    setError(null);
 
-    setTokenReveal(data?.token || null);
+    const response = await fetch(`/api/admin/api-keys/${keyId}`, { method: "DELETE" });
+    const data = (await response.json().catch(() => null)) as { error?: string } | null;
+
+    if (!response.ok) {
+      setError(data?.error || "Failed to delete token");
+      return;
+    }
+
     await refresh();
   }
 
@@ -87,6 +105,7 @@ export function ApiKeysManager({
             + New Token
           </button>
         </div>
+        {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         {tokenReveal ? (
           <p>
             One-time token reveal: <code>{tokenReveal}</code>
@@ -109,18 +128,24 @@ export function ApiKeysManager({
                 <span>{key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString() : "Never"}</span>
                 <span>{key.revokedAt ? "Revoked" : "Active"}</span>
                 <div className="api-keys-actions-cell">
-                  <button className="api-key-action-link" type="button" onClick={() => rotate(key.id)}>
-                    Rotate
+                  <button
+                    className="api-key-action-icon"
+                    type="button"
+                    onClick={() => rotate(key.id)}
+                    aria-label="Rotate token"
+                    title="Rotate token"
+                  >
+                    {"\u21bb"}
                   </button>
-                  {!key.revokedAt ? (
-                    <button
-                      className="api-key-action-link api-key-action-link-danger"
-                      type="button"
-                      onClick={() => revoke(key.id)}
-                    >
-                      Revoke
-                    </button>
-                  ) : null}
+                  <button
+                    className="api-key-delete-x"
+                    type="button"
+                    onClick={() => deleteKey(key.id, key.label)}
+                    aria-label={`Delete token ${key.label}`}
+                    title="Delete token"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
             ))}

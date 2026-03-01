@@ -1,0 +1,51 @@
+import { Prisma } from "@prisma/client";
+import { NextResponse } from "next/server";
+import { requireSessionUser } from "@/lib/auth/admin-auth";
+import { canAccessOrganization } from "@/lib/auth/rbac";
+import { forbidden, notFound } from "@/lib/http";
+import { prisma } from "@/lib/db";
+import { deleteApiKey } from "@/lib/services/api-key-service";
+import { writeAuditLog } from "@/lib/services/audit-service";
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ keyId: string }> }
+) {
+  const auth = await requireSessionUser();
+
+  if (auth.error || !auth.user) {
+    return auth.error;
+  }
+
+  const { keyId } = await params;
+  const key = await prisma.organizationApiKey.findUnique({ where: { id: keyId } });
+
+  if (!key) {
+    return notFound("API key not found");
+  }
+
+  if (!canAccessOrganization(auth.user, key.organizationId)) {
+    return forbidden();
+  }
+
+  try {
+    await deleteApiKey(keyId);
+
+    await writeAuditLog({
+      organizationId: key.organizationId,
+      actorUserId: auth.user.id,
+      action: "api_key.deleted",
+      entityType: "OrganizationApiKey",
+      entityId: key.id,
+      metadata: { label: key.label, prefix: key.prefix }
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      return notFound("API key not found");
+    }
+
+    throw error;
+  }
+}

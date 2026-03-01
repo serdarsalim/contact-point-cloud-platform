@@ -54,6 +54,12 @@ export async function revokeApiKey(id: string) {
   });
 }
 
+export async function deleteApiKey(id: string) {
+  return prisma.organizationApiKey.delete({
+    where: { id }
+  });
+}
+
 export async function rotateApiKey(input: { id: string; createdByUserId: string }) {
   const existing = await prisma.organizationApiKey.findUnique({
     where: { id: input.id }
@@ -66,12 +72,7 @@ export async function rotateApiKey(input: { id: string; createdByUserId: string 
   const generated = generateApiToken();
 
   const rotated = await prisma.$transaction(async (tx) => {
-    await tx.organizationApiKey.update({
-      where: { id: existing.id },
-      data: { revokedAt: new Date() }
-    });
-
-    return tx.organizationApiKey.create({
+    const created = await tx.organizationApiKey.create({
       data: {
         organizationId: existing.organizationId,
         createdByUserId: input.createdByUserId,
@@ -81,6 +82,12 @@ export async function rotateApiKey(input: { id: string; createdByUserId: string 
         scopes: existing.scopes
       }
     });
+
+    await tx.organizationApiKey.delete({
+      where: { id: existing.id }
+    });
+
+    return created;
   });
 
   return {

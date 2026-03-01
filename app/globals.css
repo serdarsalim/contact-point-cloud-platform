@@ -491,6 +491,23 @@ button.danger {
   flex-wrap: wrap;
 }
 
+.api-key-delete-x {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #b91c1c;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.api-key-delete-x:hover {
+  color: #991b1b;
+}
+
 .api-key-action-link {
   width: auto;
   margin: 0;
@@ -514,6 +531,23 @@ button.danger {
 
 .api-key-action-link-danger:hover {
   color: #991b1b;
+}
+
+.api-key-action-icon {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #1f2937;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.api-key-action-icon:hover {
+  color: #0f172a;
 }
 
 .change-password-shell {
@@ -724,6 +758,10 @@ code {
   margin-bottom: 0;
 }
 
+.templates-subject-field {
+  grid-column: span 2;
+}
+
 .templates-body-editor {
   min-height: 100px;
 }
@@ -741,6 +779,22 @@ code {
 .templates-textarea {
   min-height: 1123px;
   resize: vertical;
+}
+
+.templates-textarea-compact {
+  min-height: 260px;
+}
+
+.template-type-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.template-type-picker-button {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  text-align: center;
 }
 
 .templates-page-main {
@@ -783,6 +837,14 @@ code {
   }
 
   .templates-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .templates-subject-field {
+    grid-column: auto;
+  }
+
+  .template-type-picker-grid {
     grid-template-columns: 1fr;
   }
 
