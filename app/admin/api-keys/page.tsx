@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth/admin-auth";
 import { canAccessOrganization, getDefaultOrganizationId, isSuperadmin } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/db";
 import { listApiKeys } from "@/lib/services/api-key-service";
+import { AdminNavbar } from "@/app/admin/_components/admin-navbar";
 import { ApiKeysManager } from "@/app/admin/_components/api-keys-manager";
 
 export default async function ApiKeysPage({
@@ -25,14 +26,21 @@ export default async function ApiKeysPage({
   const organizations = isSuperadmin(user)
     ? await prisma.organization.findMany({ orderBy: { name: "asc" } })
     : user.memberships.map((membership) => membership.organization);
+  const superadmin = isSuperadmin(user);
 
   const defaultOrgId = organizations[0]?.id || getDefaultOrganizationId(user);
   const selectedOrgId =
     requestedOrgId && canAccessOrganization(user, requestedOrgId) ? requestedOrgId : defaultOrgId;
+  const selectedOrganization = organizations.find((org) => org.id === selectedOrgId) || organizations[0] || null;
   const initialApiKeys = selectedOrgId ? await listApiKeys(selectedOrgId) : [];
 
   return (
-    <main>
+    <main className="admin-main">
+      <AdminNavbar
+        isSuperadmin={superadmin}
+        organizationName={selectedOrganization?.name}
+        userEmail={user.email}
+      />
       <ApiKeysManager
         organizations={organizations.map((org) => ({ id: org.id, name: org.name }))}
         initialApiKeys={initialApiKeys.map((apiKey) => ({

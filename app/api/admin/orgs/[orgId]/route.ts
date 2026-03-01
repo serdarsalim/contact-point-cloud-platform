@@ -4,7 +4,7 @@ import { requireSessionUser } from "@/lib/auth/admin-auth";
 import { isSuperadmin } from "@/lib/auth/rbac";
 import { badRequest, forbidden, notFound } from "@/lib/http";
 import { readBody } from "@/lib/request";
-import { deleteOrganization, updateOrganization } from "@/lib/services/org-service";
+import { updateOrganization } from "@/lib/services/org-service";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/services/audit-service";
 
@@ -78,15 +78,29 @@ export async function DELETE(
       where: { id: orgId }
     });
 
-    await deleteOrganization(orgId);
+    if (!existing) {
+      return notFound("Organization not found");
+    }
 
-    await writeAuditLog({
-      organizationId: orgId,
-      actorUserId: auth.user.id,
-      action: "org.deleted",
-      entityType: "Organization",
-      entityId: orgId,
-      metadata: { name: existing?.name || null, slug: existing?.slug || null }
+    await prisma.$transaction(async (tx) => {
+      await tx.auditLog.create({
+        data: {
+          organizationId: null,
+          actorUserId: auth.user.id,
+          action: "org.deleted",
+          entityType: "Organization",
+          entityId: orgId,
+          metadata: {
+            name: existing.name,
+            slug: existing.slug,
+            deletedOrganizationId: orgId
+          }
+        }
+      });
+
+      await tx.organization.delete({
+        where: { id: orgId }
+      });
     });
 
     return NextResponse.json({ ok: true });

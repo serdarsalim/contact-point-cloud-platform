@@ -3,12 +3,8 @@
 import { FormEvent, useMemo, useState } from "react";
 import { TinyMceEditor } from "@/app/admin/_components/tinymce-editor";
 
-type Organization = {
-  id: string;
-  name: string;
-};
-
 type TemplateType = "EMAIL" | "WHATSAPP" | "NOTE";
+type TemplateTypeFilter = "ALL" | TemplateType;
 
 type Template = {
   id: string;
@@ -56,17 +52,15 @@ function typePillClass(type: TemplateType): string {
 }
 
 export function TemplatesManager({
-  organizations,
+  organizationId,
   initialTemplates,
-  initialOrganizationId
 }: {
-  organizations: Organization[];
+  organizationId: string;
   initialTemplates: Template[];
-  initialOrganizationId?: string;
 }) {
-  const [selectedOrgId, setSelectedOrgId] = useState(initialOrganizationId || organizations[0]?.id || "");
   const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>("ALL");
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialTemplates[0]?.id || null);
   const [draft, setDraft] = useState<TemplateDraft>(
     initialTemplates[0] ? draftFromTemplate(initialTemplates[0]) : emptyDraft("EMAIL")
@@ -79,16 +73,14 @@ export function TemplatesManager({
     const query = search.trim().toLowerCase();
 
     return templates.filter((template) => {
+      if (typeFilter !== "ALL" && template.type !== typeFilter) {
+        return false;
+      }
       if (!query) return true;
       const haystack = `${template.name} ${template.subject || ""} ${template.body}`.toLowerCase();
       return haystack.includes(query);
     });
-  }, [templates, search]);
-
-  const activeTemplate = useMemo(
-    () => templates.find((template) => template.id === activeTemplateId) || null,
-    [templates, activeTemplateId]
-  );
+  }, [templates, search, typeFilter]);
 
   function selectTemplate(template: Template) {
     setActiveTemplateId(template.id);
@@ -105,8 +97,8 @@ export function TemplatesManager({
     setStatus("Creating new template");
   }
 
-  async function refresh(orgId: string): Promise<Template[] | null> {
-    const response = await fetch(`/api/admin/templates?orgId=${encodeURIComponent(orgId)}`);
+  async function refresh(): Promise<Template[] | null> {
+    const response = await fetch(`/api/admin/templates?orgId=${encodeURIComponent(organizationId)}`);
 
     if (!response.ok) {
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -131,27 +123,20 @@ export function TemplatesManager({
     return data.templates;
   }
 
-  async function handleOrganizationChange(orgId: string) {
-    setSelectedOrgId(orgId);
-    setSearch("");
-    setError(null);
-    await refresh(orgId);
-  }
-
   async function saveTemplate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setIsSaving(true);
 
     const payload = {
-      organizationId: selectedOrgId,
+      organizationId,
       type: draft.type,
       name: draft.name,
       subject: draft.type === "EMAIL" ? draft.subject || null : null,
       body: draft.body
     };
 
-    if (!payload.organizationId || !payload.name.trim() || !payload.body.trim()) {
+    if (!payload.name.trim() || !payload.body.trim()) {
       setError("Organization, name, and body are required");
       setIsSaving(false);
       return;
@@ -177,7 +162,7 @@ export function TemplatesManager({
       return;
     }
 
-    const refreshed = await refresh(selectedOrgId);
+    const refreshed = await refresh();
 
     const templateId = data?.template?.id || draft.id;
     if (templateId && refreshed) {
@@ -208,7 +193,7 @@ export function TemplatesManager({
       return;
     }
 
-    await refresh(selectedOrgId);
+    await refresh();
     setStatus("Deleted");
   }
 
@@ -216,20 +201,21 @@ export function TemplatesManager({
     <div className="templates-workspace">
       <aside className="templates-sidebar card">
         <div className="templates-sidebar-head">
-          <div className="templates-sidebar-title-row">
-            <h3>Templates</h3>
+          <div className="templates-sidebar-actions">
             <button className="button-inline" type="button" onClick={startNewTemplate}>
               New
             </button>
           </div>
           <label>
-            Organization
-            <select value={selectedOrgId} onChange={(event) => handleOrganizationChange(event.target.value)} required>
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
+            Filter by type
+            <select
+              value={typeFilter}
+              onChange={(event) => setTypeFilter(event.target.value as TemplateTypeFilter)}
+            >
+              <option value="ALL">All</option>
+              <option value="EMAIL">Email</option>
+              <option value="WHATSAPP">WhatsApp</option>
+              <option value="NOTE">Note</option>
             </select>
           </label>
           <label>

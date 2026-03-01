@@ -120,21 +120,23 @@ export function ApiKeysManager({
         <h3>Tokens</h3>
         {filtered.length === 0 ? <p>No tokens</p> : null}
         {filtered.map((key) => (
-          <div key={key.id} style={{ marginBottom: "0.9rem" }}>
+          <div key={key.id} style={{ marginBottom: "0.9rem", borderBottom: "1px solid #e5e7eb", paddingBottom: "0.75rem" }}>
             <strong>{key.label}</strong> <code>{key.prefix}</code>
             <p style={{ margin: "0.15rem 0" }}>Scopes: {key.scopes.join(", ")}</p>
             <p style={{ margin: "0.15rem 0" }}>
               Last used: {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString() : "Never"}
             </p>
-            <p style={{ margin: "0.15rem 0" }}>Status: {key.revokedAt ? "Revoked" : "Active"}</p>
-            <button className="secondary" type="button" onClick={() => rotate(key.id)}>
-              Rotate
-            </button>
-            {!key.revokedAt ? (
-              <button className="danger" type="button" onClick={() => revoke(key.id)}>
-                Revoke
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+              <p style={{ margin: 0 }}>Status: {key.revokedAt ? "Revoked" : "Active"}</p>
+              <button className="secondary button-inline" type="button" onClick={() => rotate(key.id)}>
+                Rotate
               </button>
-            ) : null}
+              {!key.revokedAt ? (
+                <button className="danger button-inline" type="button" onClick={() => revoke(key.id)}>
+                  Revoke
+                </button>
+              ) : null}
+            </div>
           </div>
         ))}
       </div>

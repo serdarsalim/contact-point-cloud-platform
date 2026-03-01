@@ -1,8 +1,8 @@
-import { MembershipRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import type { SessionUser } from "@/lib/auth/admin-auth";
 
 export function isSuperadmin(user: SessionUser): boolean {
-  return user.memberships.some((membership) => membership.role === MembershipRole.SUPERADMIN);
+  return user.role === UserRole.SUPERADMIN;
 }
 
 export function canAccessOrganization(user: SessionUser, organizationId: string): boolean {

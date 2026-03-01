@@ -18,7 +18,7 @@ Proprietary software. All rights reserved.
 
 - Prisma data model for `User`, `Organization`, `OrganizationMember`, `OrganizationApiKey`, `Template`
 - Session auth foundation for admin web routes (username/password + signed HTTP-only cookie)
-- RBAC foundation for `SUPERADMIN` and `ADMIN`
+- RBAC foundation for global `SUPERADMIN` and org-scoped `ADMIN`
 - Extension bearer-token auth foundation
 - Extension read-only APIs:
   - `GET /api/v1/extension/me`
@@ -69,10 +69,16 @@ npm run prisma:generate
 npm run prisma:deploy
 ```
 
-5. Optional: seed bootstrap superadmin + organization:
+5. Optional: seed bootstrap superadmin (global role) + optional bootstrap organization:
 
 ```bash
 npm run prisma:seed
+```
+
+If an existing user must be promoted to global superadmin (without resetting password):
+
+```bash
+npm run superadmin:promote -- --username <username>
 ```
 
 6. Run app:
@@ -88,17 +94,17 @@ If your Neon DB is not reachable yet, schema and migration files are already sca
 ### Roles
 
 - `SUPERADMIN`
+  - Global role on `User` (not tied to org membership)
   - Organization CRUD
-  - Create/revoke multiple org admins per organization
-  - Manage templates/API keys for any org
+  - Full template/API key/admin access across all organizations
   - Optionally create initial org admin during org creation
 - `ADMIN`
-  - Manage org admins, templates and API keys only for assigned organizations
+  - Manage org admins, templates and API keys only for assigned organizations via `OrganizationMember`
 
 ### Enforcement
 
 - Web admin routes require a valid session cookie.
-- Admin APIs resolve org scope from membership checks.
+- Admin APIs resolve org scope from global superadmin role or org membership checks.
 - Admin assignment endpoints never allow granting `SUPERADMIN`.
 - Removing the last `ADMIN` from an organization is blocked.
 - Extension APIs never trust client-supplied org input; org is derived from bearer token.

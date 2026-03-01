@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { MembershipRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import { prisma } from "../src/lib/db";
 import { generatePassword, hashPassword } from "../src/lib/auth/password";
 
@@ -28,35 +28,27 @@ async function main() {
     where: { username },
     update: {
       email,
+      role: UserRole.SUPERADMIN,
       passwordHash: hashPassword(password)
     },
     create: {
       username,
       email,
+      role: UserRole.SUPERADMIN,
       passwordHash: hashPassword(password)
     }
   });
 
-  await prisma.organizationMember.upsert({
+  await prisma.organizationMember.deleteMany({
     where: {
-      organizationId_userId: {
-        organizationId: org.id,
-        userId: user.id
-      }
-    },
-    update: {
-      role: MembershipRole.SUPERADMIN
-    },
-    create: {
-      organizationId: org.id,
-      userId: user.id,
-      role: MembershipRole.SUPERADMIN
+      userId: user.id
     }
   });
 
   console.log("Seed complete");
   console.log(`username: ${username}`);
   console.log(`email: ${email}`);
+  console.log(`bootstrap org: ${org.name} (${org.slug})`);
   if (!process.env.SEED_SUPERADMIN_PASSWORD) {
     console.log(`generated password: ${password}`);
   }

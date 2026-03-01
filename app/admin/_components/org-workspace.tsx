@@ -5,7 +5,7 @@ import { FormEvent, useState } from "react";
 
 type OrgAdmin = {
   id: string;
-  role: "ADMIN" | "SUPERADMIN";
+  role: "ADMIN";
   createdAt: string;
   user: {
     id: string;
@@ -41,7 +41,7 @@ export function OrgWorkspace({
     const data = (await response.json()) as {
       admins: Array<{
         id: string;
-        role: "ADMIN" | "SUPERADMIN";
+        role: "ADMIN";
         createdAt: string;
         user: {
           id: string;
@@ -89,7 +89,15 @@ export function OrgWorkspace({
     await refreshAdmins();
   }
 
-  async function revokeAdmin(userId: string) {
+  async function revokeAdmin(userId: string, username: string) {
+    const confirmed = window.confirm(
+      `Delete user ${username} from this organization? This removes their admin access.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     setError(null);
     setResetPasswordReveal(null);
 
@@ -177,23 +185,27 @@ export function OrgWorkspace({
           {admins.length === 0 ? <p>No admins assigned.</p> : null}
           {admins.map((admin) => (
             <div key={admin.id} style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}>
-              <strong>{admin.user.username}</strong>
-              <p style={{ margin: "0.15rem 0" }}>{admin.user.email}</p>
               <p style={{ margin: "0.15rem 0" }}>
-                Role: <code>{admin.role}</code>
+                <strong>{admin.user.username}</strong> ({admin.user.email})
               </p>
-              {canResetAdminPasswords ? (
+              <div className="org-admin-actions">
+                {canResetAdminPasswords ? (
+                  <button
+                    className="secondary button-inline"
+                    type="button"
+                    onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                  >
+                    Reset password
+                  </button>
+                ) : null}
                 <button
-                  className="secondary button-inline"
+                  className="danger button-inline"
                   type="button"
-                  onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                  onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
                 >
-                  Reset password
+                  Delete user
                 </button>
-              ) : null}
-              <button className="danger" type="button" onClick={() => revokeAdmin(admin.user.id)}>
-                Revoke from org
-              </button>
+              </div>
             </div>
           ))}
         </div>

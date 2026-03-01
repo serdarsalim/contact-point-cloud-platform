@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/admin-auth";
 import { ChangePasswordForm } from "@/app/admin/_components/change-password-form";
-import { LogoutButton } from "@/app/admin/_components/logout-button";
+import { isSuperadmin } from "@/lib/auth/rbac";
+import { AdminNavbar } from "@/app/admin/_components/admin-navbar";
 
 export default async function ChangePasswordPage() {
   const user = await getSessionUser();
@@ -11,13 +12,8 @@ export default async function ChangePasswordPage() {
   }
 
   return (
-    <main>
-      <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <p style={{ margin: 0 }}>
-          Signed in as <strong>{user.username}</strong>
-        </p>
-        <LogoutButton />
-      </div>
+    <main className="admin-main">
+      <AdminNavbar isSuperadmin={isSuperadmin(user)} userEmail={user.email} />
       <ChangePasswordForm forceChange={user.mustChangePassword} />
     </main>
   );

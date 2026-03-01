@@ -12,6 +12,11 @@ enum MembershipRole {
   ADMIN
 }
 
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+}
+
 enum TemplateType {
   EMAIL
   WHATSAPP
@@ -22,6 +27,7 @@ model User {
   id             String               @id @default(cuid())
   username       String               @unique
   email          String               @unique
+  role           UserRole             @default(ADMIN)
   passwordHash   String
   mustChangePassword Boolean          @default(false)
   memberships    OrganizationMember[]

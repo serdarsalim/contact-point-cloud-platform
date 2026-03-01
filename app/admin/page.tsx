@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/admin-auth";
 import { isSuperadmin } from "@/lib/auth/rbac";
-import { LogoutButton } from "@/app/admin/_components/logout-button";
+import { AdminNavbar } from "@/app/admin/_components/admin-navbar";
 import { listOrganizations } from "@/lib/services/org-service";
 import { OrgsManager } from "@/app/admin/_components/orgs-manager";
 
@@ -21,22 +21,8 @@ export default async function AdminHomePage() {
   const organizations = superadmin ? await listOrganizations() : [];
 
   return (
-    <main>
-      <div className="card">
-        <div className="admin-card-header">
-          <h1>Admin Dashboard</h1>
-          <LogoutButton />
-        </div>
-        <p>
-          Signed in as <strong>{user.username}</strong> ({user.email}) - {superadmin ? "Superadmin" : "Admin"}
-        </p>
-        {!superadmin ? (
-          <div className="grid cols-3">
-            <Link href="/admin/templates">Template Manager</Link>
-            <Link href="/admin/api-keys">API Key Manager</Link>
-          </div>
-        ) : null}
-      </div>
+    <main className="admin-main">
+      <AdminNavbar isSuperadmin={superadmin} userEmail={user.email} />
 
       {superadmin ? (
         <OrgsManager

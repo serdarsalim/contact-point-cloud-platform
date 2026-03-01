@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { MembershipRole } from "@prisma/client";
 import { getSessionUser } from "@/lib/auth/admin-auth";
 import { canAccessOrganization, isSuperadmin } from "@/lib/auth/rbac";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { AdminNavbar } from "@/app/admin/_components/admin-navbar";
 import { listOrganizationAdmins } from "@/lib/services/user-service";
 import { OrgWorkspace } from "@/app/admin/_components/org-workspace";
 
@@ -26,7 +26,8 @@ export default async function OrganizationWorkspacePage({
 
   if (!canAccessOrganization(user, orgId)) {
     return (
-      <main>
+      <main className="admin-main">
+        <AdminNavbar isSuperadmin={isSuperadmin(user)} userEmail={user.email} />
         <div className="card">
           <h1>Forbidden</h1>
           <p>You do not have access to this organization workspace.</p>
@@ -47,13 +48,18 @@ export default async function OrganizationWorkspacePage({
   const superadmin = isSuperadmin(user);
 
   return (
-    <main>
+    <main className="admin-main">
+      <AdminNavbar
+        isSuperadmin={superadmin}
+        organizationName={organization.name}
+        userEmail={user.email}
+      />
       <OrgWorkspace
         org={{ id: organization.id, name: organization.name, slug: organization.slug }}
         canResetAdminPasswords={superadmin}
         initialAdmins={admins.map((admin) => ({
           id: admin.id,
-          role: admin.role as MembershipRole,
+          role: "ADMIN",
           createdAt: admin.createdAt.toISOString(),
           user: {
             id: admin.user.id,
