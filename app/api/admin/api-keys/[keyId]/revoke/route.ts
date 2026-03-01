@@ -21,7 +21,7 @@ export async function POST(
   const key = await prisma.organizationApiKey.findUnique({ where: { id: keyId } });
 
   if (!key) {
-    return notFound("API key not found");
+    return notFound("API token not found");
   }
 
   if (!canAccessOrganization(auth.user, key.organizationId)) {
@@ -43,7 +43,7 @@ export async function POST(
     return NextResponse.json({ apiKey });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-      return notFound("API key not found");
+      return notFound("API token not found");
     }
 
     throw error;

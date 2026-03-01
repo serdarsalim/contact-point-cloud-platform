@@ -27,14 +27,14 @@ Proprietary software. All rights reserved.
   - Organizations (SUPERADMIN)
   - Organization admin assignment (SUPERADMIN global + ADMIN in own org)
   - Templates CRUD (ADMIN own org, SUPERADMIN global)
-  - API key create/list/revoke/rotate (ADMIN own org, SUPERADMIN global)
+  - API token create/list/revoke/rotate (ADMIN own org, SUPERADMIN global)
   - User creation with generated password (SUPERADMIN)
 - Admin pages skeleton under `/admin/*`
 - Email template editor uses TinyMCE (links/images by URL), while WhatsApp/Note remain plain text
 - Superadmin org workspace at `/admin/orgs/:orgId` for multi-admin management
 - One-time reveal token creation and rotation behavior
 - `lastUsedAt` updates on successful extension token-auth requests
-- Basic audit logging for org/admin/template/API-key management actions
+- Basic audit logging for org/admin/template/API-token management actions
 - First-login password change enforcement for generated admin passwords
 
 ## Setup
@@ -96,10 +96,10 @@ If your Neon DB is not reachable yet, schema and migration files are already sca
 - `SUPERADMIN`
   - Global role on `User` (not tied to org membership)
   - Organization CRUD
-  - Full template/API key/admin access across all organizations
+  - Full template/API token/admin access across all organizations
   - Optionally create initial org admin during org creation
 - `ADMIN`
-  - Manage org admins, templates and API keys only for assigned organizations via `OrganizationMember`
+  - Manage org admins, templates and API tokens only for assigned organizations via `OrganizationMember`
 
 ### Enforcement
 

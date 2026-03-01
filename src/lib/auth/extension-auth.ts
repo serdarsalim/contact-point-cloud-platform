@@ -5,19 +5,40 @@ import { hashApiToken } from "@/lib/tokens";
 export async function authenticateExtensionRequest(request: Request) {
   const authHeader = request.headers.get("authorization");
 
-  if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) {
+  if (!authHeader) {
     return {
       apiKey: null,
-      error: NextResponse.json({ error: "Missing bearer token" }, { status: 401 })
+      error: NextResponse.json(
+        { error: "Missing Authorization header.", code: "missing_authorization_header" },
+        { status: 401 }
+      )
     };
   }
 
-  const rawToken = authHeader.slice(7).trim();
+  const [scheme, ...tokenParts] = authHeader.trim().split(/\s+/);
+
+  if (scheme?.toLowerCase() !== "bearer") {
+    return {
+      apiKey: null,
+      error: NextResponse.json(
+        {
+          error: "Authorization header must use Bearer token format.",
+          code: "invalid_authorization_scheme"
+        },
+        { status: 401 }
+      )
+    };
+  }
+
+  const rawToken = tokenParts.join(" ").trim();
 
   if (!rawToken) {
     return {
       apiKey: null,
-      error: NextResponse.json({ error: "Invalid bearer token" }, { status: 401 })
+      error: NextResponse.json(
+        { error: "Bearer token is empty.", code: "empty_bearer_token" },
+        { status: 401 }
+      )
     };
   }
 
@@ -36,7 +57,10 @@ export async function authenticateExtensionRequest(request: Request) {
   if (!apiKey) {
     return {
       apiKey: null,
-      error: NextResponse.json({ error: "Unauthorized token" }, { status: 401 })
+      error: NextResponse.json(
+        { error: "Invalid or revoked API token.", code: "invalid_api_token" },
+        { status: 401 }
+      )
     };
   }
 

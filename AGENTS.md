@@ -22,10 +22,12 @@ The extension must support two parallel sources:
 - Extension read APIs are implemented:
   - `GET /api/v1/extension/me`
   - `GET /api/v1/extension/templates?type=EMAIL|WHATSAPP|NOTE`
-- API key lifecycle is implemented:
+- API token lifecycle is implemented:
   - hash-only storage
   - one-time reveal on create/rotate
-  - revoke/rotate flows
+  - rotate flow that replaces token (old row deleted, new row created)
+  - explicit token delete flow in admin UI/API
+  - revoke endpoint retained for compatibility
   - `lastUsedAt` updates on successful token-auth requests
 - Org and admin management are implemented:
   - superadmin org create/delete
@@ -35,12 +37,15 @@ The extension must support two parallel sources:
 - First-login password change flow is implemented (`mustChangePassword`).
 - Audit logging is implemented for key admin actions.
 - Admin UI has been iterated and now includes:
+  - auth-first login experience at `/` and `/admin/login`
   - context-aware navbar
   - superadmin all-org directory with left sidebar
-  - org workspace with stats + admins
+  - org-directory workspace panel with selected-org stats + admins
   - `+ New Admin` modal flow
   - redesigned templates workspace (sidebar + editor)
-  - redesigned API token creation/list actions
+  - template type-picker modal for new template creation
+  - type-aware template forms (`EMAIL` uses subject + rich editor; `WHATSAPP/NOTE` use name + plain text body)
+  - redesigned API token list card with `+ New Token` modal creation
 
 ### Current RBAC Decision (Important)
 - `SUPERADMIN` is a **global user role** (`User.role = SUPERADMIN`) and is **not org membership-based**.
@@ -69,7 +74,7 @@ Only two web roles are required:
   - Create/delete organizations
   - Assign/revoke org admins
   - View all orgs
-  - Full access to templates and API keys across all orgs
+  - Full access to templates and API tokens across all orgs
 - `ADMIN`
   - Manage templates for their org
   - Manage org API tokens for extension consumers
@@ -81,13 +86,13 @@ Extension users are not web-admin users; they use org API tokens only.
 2. Each token has a human-readable label, e.g. `Jane - SDR MacBook`.
 3. Token grants read access to that org's cloud templates.
 4. Token is pasted into extension settings.
-5. Offboarding = revoke token.
+5. Offboarding = delete token (preferred in current UI) or revoke token.
 
 Security requirements:
 - Store only token hash (never raw token)
 - Show full token only once at creation
 - Keep `lastUsedAt`
-- Support revoke/rotate
+- Support rotate + delete (revoke endpoint retained for compatibility)
 - Scope token to one organization
 - Scope token to `templates:read` only
 
@@ -154,7 +159,7 @@ Rules:
 - Org CRUD (`SUPERADMIN`, global role)
 - Org membership/admin assignment (`SUPERADMIN` globally, `ADMIN` within accessible org)
 - Template CRUD (`ADMIN` in own org; `SUPERADMIN` globally)
-- API key create/list/revoke/rotate (`ADMIN` own org; `SUPERADMIN` all)
+- API token create/list/delete/rotate (`ADMIN` own org; `SUPERADMIN` all)
 
 ## Extension Storage-Key Strategy
 
@@ -197,7 +202,7 @@ Rules:
 ### Milestone 3: Cloud Template Management (Web)
 - Done
 
-### Milestone 4: API Key Lifecycle
+### Milestone 4: API Token Lifecycle
 - Done
 
 ### Milestone 5: Extension Cloud Read Integration
@@ -219,7 +224,7 @@ Rules:
 3. Cloud templates cannot be edited from extension.
 4. SUPERADMIN can create/delete orgs and assign admins.
 5. ADMIN can manage templates only in own org.
-6. Revoked tokens lose extension access immediately.
+6. Deleted/revoked/rotated-old tokens lose extension access immediately.
 7. No cache or data bleed between orgs.
 8. Local flows remain functional when cloud API is down.
 

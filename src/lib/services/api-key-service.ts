@@ -66,7 +66,7 @@ export async function rotateApiKey(input: { id: string; createdByUserId: string 
   });
 
   if (!existing) {
-    throw new Error("API key not found");
+    throw new Error("API token not found");
   }
 
   const generated = generateApiToken();
