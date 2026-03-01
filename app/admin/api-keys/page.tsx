@@ -39,7 +39,7 @@ export default async function ApiKeysPage({
         <AdminNavbar isSuperadmin={superadmin} userEmail={user.email} />
         <div className="card">
           <h1>No organization available</h1>
-          <p>You do not have organization access for API key management.</p>
+          <p>You do not have organization access for API token management.</p>
         </div>
       </main>
     );

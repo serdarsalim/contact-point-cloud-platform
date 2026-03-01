@@ -368,18 +368,6 @@ button.danger {
   font-weight: 700;
 }
 
-.orgs-list-item-meta {
-  font-size: 0.88rem;
-  color: #475569;
-}
-
-.orgs-list-item-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
 .orgs-empty {
   margin-top: 0.35rem;
 }
@@ -412,6 +400,30 @@ button.danger {
 .orgs-workspace-content {
   display: grid;
   gap: 1rem;
+}
+
+.orgs-workspace-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.orgs-workspace-stat {
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.orgs-workspace-stat span {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.orgs-workspace-stat strong {
+  font-size: 1.15rem;
+  line-height: 1.1;
 }
 
 .orgs-workspace-links {
@@ -839,6 +851,10 @@ code {
   }
 
   .org-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orgs-workspace-stats {
     grid-template-columns: 1fr;
   }
 

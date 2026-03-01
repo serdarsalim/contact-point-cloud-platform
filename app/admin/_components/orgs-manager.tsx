@@ -6,8 +6,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 type Org = {
   id: string;
   name: string;
-  slug: string;
-  memberCount: number;
+  templateCount: number;
+  apiTokenCount: number;
 };
 
 type OrgAdmin = {
@@ -41,9 +41,7 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
       return organizations;
     }
 
-    return organizations.filter(
-      (org) => org.name.toLowerCase().includes(query) || org.slug.toLowerCase().includes(query)
-    );
+    return organizations.filter((org) => org.name.toLowerCase().includes(query));
   }, [organizations, search]);
 
   const selectedOrg = organizations.find((org) => org.id === selectedOrgId) || null;
@@ -93,16 +91,15 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
       organizations: Array<{
         id: string;
         name: string;
-        slug: string;
-        _count: { templates: number; members: number };
+        _count: { templates: number; members: number; apiKeys: number };
       }>;
     };
 
     const mapped = data.organizations.map((org) => ({
       id: org.id,
       name: org.name,
-      slug: org.slug,
-      memberCount: org._count.members
+      templateCount: org._count.templates,
+      apiTokenCount: org._count.apiKeys
     }));
 
     setOrganizations(mapped);
@@ -214,7 +211,7 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by name or slug"
+            placeholder="Search by name"
           />
         </label>
         <div className="orgs-list">
@@ -227,10 +224,6 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
               onClick={() => setSelectedOrgId(org.id)}
             >
               <span className="orgs-list-item-name">{org.name}</span>
-              <span className="orgs-list-item-meta-row">
-                <span className="orgs-list-item-meta">{org.slug}</span>
-                <span className="orgs-list-item-meta">{org.memberCount} members</span>
-              </span>
             </button>
           ))}
         </div>
@@ -252,10 +245,25 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
 
         {selectedOrg ? (
           <div className="orgs-workspace-content">
+            <div className="orgs-workspace-stats">
+              <div className="orgs-workspace-stat">
+                <span>Templates</span>
+                <strong>{selectedOrg.templateCount}</strong>
+              </div>
+              <div className="orgs-workspace-stat">
+                <span>Admins</span>
+                <strong>{admins.length}</strong>
+              </div>
+              <div className="orgs-workspace-stat">
+                <span>API tokens</span>
+                <strong>{selectedOrg.apiTokenCount}</strong>
+              </div>
+            </div>
+
             <div className="orgs-workspace-links">
               <Link href={`/admin/orgs/${selectedOrg.id}`}>Open workspace</Link>
               <Link href={`/admin/templates?orgId=${selectedOrg.id}`}>Open templates</Link>
-              <Link href={`/admin/api-keys?orgId=${selectedOrg.id}`}>Open API keys</Link>
+              <Link href={`/admin/api-keys?orgId=${selectedOrg.id}`}>Open API tokens</Link>
             </div>
 
             <div className="orgs-admins-section">

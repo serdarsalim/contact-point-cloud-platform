@@ -37,8 +37,8 @@ export default async function OrganizationsPage() {
         initialOrganizations={organizations.map((org) => ({
           id: org.id,
           name: org.name,
-          slug: org.slug,
-          memberCount: org._count.members
+          templateCount: org._count.templates,
+          apiTokenCount: org._count.apiKeys
         }))}
       />
     </main>
