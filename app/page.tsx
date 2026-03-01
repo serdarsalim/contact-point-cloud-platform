@@ -1,20 +1,17 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/admin-auth";
+import { LoginForm } from "@/app/admin/_components/login-form";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getSessionUser();
+
+  if (user) {
+    redirect(user.mustChangePassword ? "/admin/change-password" : "/admin");
+  }
+
   return (
-    <main>
-      <div className="card">
-        <h1>Contact Point Cloud Platform</h1>
-        <p>
-          Centralized template management for Contact Point Chrome extension.
-          Local extension templates remain untouched and editable in-extension.
-        </p>
-        <p>
-          Cloud templates are managed here and consumed read-only from extension
-          token APIs.
-        </p>
-        <Link href="/admin/login">Go to Admin Login</Link>
-      </div>
+    <main className="login-main">
+      <LoginForm />
     </main>
   );
 }

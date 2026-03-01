@@ -36,8 +36,8 @@ export function LoginForm() {
   }
 
   return (
-    <form className="card" onSubmit={handleSubmit}>
-      <h2>Admin Login</h2>
+    <form className="card login-card" onSubmit={handleSubmit}>
+      <h2>Log in</h2>
       <label>
         Username
         <input value={username} onChange={(event) => setUsername(event.target.value)} required />
@@ -51,9 +51,9 @@ export function LoginForm() {
           required
         />
       </label>
-      {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
+      {error ? <p className="login-error">{error}</p> : null}
       <button type="submit" disabled={isLoading}>
-        {isLoading ? "Signing in..." : "Sign in"}
+        {isLoading ? "Signing in..." : "Log in"}
       </button>
     </form>
   );

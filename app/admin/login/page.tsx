@@ -10,7 +10,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <main>
+    <main className="login-main">
       <LoginForm />
     </main>
   );

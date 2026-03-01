@@ -577,6 +577,30 @@ button.danger {
   margin-top: 0;
 }
 
+.login-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  padding: 1.25rem;
+  margin: 0;
+}
+
+.login-card h2 {
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+}
+
+.login-error {
+  color: #b91c1c;
+  margin-top: 0;
+}
+
 @media (min-width: 900px) {
   .grid.cols-2 {
     grid-template-columns: 1fr 1fr;
