@@ -34,9 +34,10 @@ export default async function TemplatesPage({
     : [];
 
   return (
-    <main>
+    <main className="templates-page-main">
       <TemplatesManager
         organizations={organizations.map((org) => ({ id: org.id, name: org.name }))}
+        initialOrganizationId={selectedOrgId || undefined}
         initialTemplates={initialTemplates.map((template) => ({
           id: template.id,
           organizationId: template.organizationId,

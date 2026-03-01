@@ -49,6 +49,11 @@ export function TinyMceEditor({ value = "", onChange, height = 340 }: TinyMceEdi
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editorRef = useRef<any>(null);
   const latestValueRef = useRef(value);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,13 +72,15 @@ export function TinyMceEditor({ value = "", onChange, height = 340 }: TinyMceEdi
       window.tinymce.init({
         target: textareaRef.current,
         height,
+        min_height: height,
+        resize: true,
         menubar: false,
         branding: false,
         license_key: "gpl",
-        plugins: ["link", "image", "lists", "code", "autoresize"],
+        plugins: ["link", "image", "lists", "code"],
         toolbar:
           "undo redo | blocks | bold italic underline | bullist numlist | link image | alignleft aligncenter alignright | code",
-        autoresize_bottom_margin: 16,
+        content_style: `body { min-height: ${Math.max(100, height - 160)}px; }`,
         image_title: true,
         automatic_uploads: false,
         file_picker_types: "image",
@@ -84,7 +91,7 @@ export function TinyMceEditor({ value = "", onChange, height = 340 }: TinyMceEdi
           });
           editor.on("change keyup undo redo", () => {
             if (!cancelled) {
-              onChange(editor.getContent());
+              onChangeRef.current(editor.getContent());
             }
           });
         }
@@ -100,7 +107,7 @@ export function TinyMceEditor({ value = "", onChange, height = 340 }: TinyMceEdi
         editorRef.current = null;
       }
     };
-  }, [height, onChange]);
+  }, [height]);
 
   useEffect(() => {
     latestValueRef.current = value || "";
