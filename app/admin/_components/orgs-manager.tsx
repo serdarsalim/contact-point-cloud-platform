@@ -263,7 +263,6 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
             <div className="orgs-workspace-links">
               <Link href={`/admin/orgs/${selectedOrg.id}`}>Open workspace</Link>
               <Link href={`/admin/templates?orgId=${selectedOrg.id}`}>Open templates</Link>
-              <Link href={`/admin/api-keys?orgId=${selectedOrg.id}`}>Open API tokens</Link>
             </div>
 
             <div className="orgs-admins-section">

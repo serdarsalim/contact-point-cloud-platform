@@ -22,7 +22,6 @@ export function AdminNavbar({
   const isManageOrgActive =
     pathname === "/admin" || pathname.startsWith("/admin/users") || pathname.startsWith("/admin/orgs/");
   const isTemplatesActive = pathname.startsWith("/admin/templates");
-  const isApiKeysActive = pathname.startsWith("/admin/api-keys");
   const isAllOrgsActive = pathname === "/admin/orgs";
   const isAllOrgsPage = isSuperadmin && pathname === "/admin/orgs";
   const hideOrgContextLinks = isSuperadmin && pathname === "/admin/orgs";
@@ -46,11 +45,6 @@ export function AdminNavbar({
           {!hideOrgContextLinks ? (
             <Link className={`admin-nav-link ${isTemplatesActive ? "active" : ""}`} href="/admin/templates">
               Templates
-            </Link>
-          ) : null}
-          {!hideOrgContextLinks ? (
-            <Link className={`admin-nav-link ${isApiKeysActive ? "active" : ""}`} href="/admin/api-keys">
-              API tokens
             </Link>
           ) : null}
         </div>

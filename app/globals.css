@@ -108,6 +108,23 @@ button.danger {
   color: #991b1b;
 }
 
+.org-admin-delete-x {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #b91c1c;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.org-admin-delete-x:hover {
+  color: #991b1b;
+}
+
 .org-admins-header {
   display: flex;
   align-items: center;
@@ -451,6 +468,29 @@ button.danger {
 
 .orgs-error {
   color: #b91c1c;
+}
+
+.org-workspace-shell {
+  width: min(1380px, calc(100% - 1.5rem));
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.org-workspace-stats-card {
+  margin-bottom: 0;
+}
+
+.org-workspace-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.org-workspace-columns .api-keys-card {
+  max-width: none;
+  margin: 0;
 }
 
 .api-keys-header {
@@ -855,6 +895,10 @@ code {
   }
 
   .orgs-workspace-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .org-workspace-columns {
     grid-template-columns: 1fr;
   }
 

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { AdminNavbar } from "@/app/admin/_components/admin-navbar";
 import { listOrganizationAdmins } from "@/lib/services/user-service";
 import { OrgWorkspace } from "@/app/admin/_components/org-workspace";
+import { listApiKeys } from "@/lib/services/api-key-service";
 
 export default async function OrganizationWorkspacePage({
   params
@@ -53,6 +54,7 @@ export default async function OrganizationWorkspacePage({
   }
 
   const admins = await listOrganizationAdmins(orgId);
+  const apiKeys = await listApiKeys(orgId);
   const superadmin = isSuperadmin(user);
 
   return (
@@ -82,6 +84,15 @@ export default async function OrganizationWorkspacePage({
             email: admin.user.email,
             createdAt: admin.user.createdAt.toISOString()
           }
+        }))}
+        initialApiTokens={apiKeys.map((apiKey) => ({
+          id: apiKey.id,
+          organizationId: apiKey.organizationId,
+          label: apiKey.label,
+          prefix: apiKey.prefix,
+          scopes: apiKey.scopes,
+          revokedAt: apiKey.revokedAt ? apiKey.revokedAt.toISOString() : null,
+          lastUsedAt: apiKey.lastUsedAt ? apiKey.lastUsedAt.toISOString() : null
         }))}
       />
     </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type ApiKey = {
   id: string;
@@ -14,10 +14,12 @@ type ApiKey = {
 
 export function ApiKeysManager({
   organizationId,
-  initialApiKeys
+  initialApiKeys,
+  onCountChange
 }: {
   organizationId: string;
   initialApiKeys: ApiKey[];
+  onCountChange?: (count: number) => void;
 }) {
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -25,12 +27,26 @@ export function ApiKeysManager({
   const [tokenReveal, setTokenReveal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function refresh() {
+  useEffect(() => {
+    setApiKeys(initialApiKeys);
+  }, [initialApiKeys, organizationId]);
+
+  useEffect(() => {
+    onCountChange?.(apiKeys.length);
+  }, [apiKeys.length, onCountChange]);
+
+  const refresh = useCallback(async () => {
     const response = await fetch(`/api/admin/api-keys?orgId=${encodeURIComponent(organizationId)}`);
     if (!response.ok) return;
     const data = (await response.json()) as { apiKeys: ApiKey[] };
     setApiKeys(data.apiKeys);
-  }
+  }, [organizationId]);
+
+  useEffect(() => {
+    void refresh();
+    setTokenReveal(null);
+    setError(null);
+  }, [organizationId, refresh]);
 
   async function createKey(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

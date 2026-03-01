@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { ApiKeysManager } from "@/app/admin/_components/api-keys-manager";
 
 type OrgAdmin = {
   id: string;
@@ -14,16 +15,29 @@ type OrgAdmin = {
   };
 };
 
+type OrgApiToken = {
+  id: string;
+  organizationId: string;
+  label: string;
+  prefix: string;
+  scopes: string[];
+  revokedAt: string | null;
+  lastUsedAt: string | null;
+};
+
 export function OrgWorkspace({
   org,
   initialAdmins,
+  initialApiTokens,
   canResetAdminPasswords
 }: {
   org: { id: string; name: string; slug: string; templateCount: number; apiKeyCount: number };
   initialAdmins: OrgAdmin[];
+  initialApiTokens: OrgApiToken[];
   canResetAdminPasswords: boolean;
 }) {
   const [admins, setAdmins] = useState(initialAdmins);
+  const [apiTokenCount, setApiTokenCount] = useState(org.apiKeyCount);
   const [showCreateAdminModal, setShowCreateAdminModal] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -147,8 +161,8 @@ export function OrgWorkspace({
   }
 
   return (
-    <div className="grid cols-2">
-      <div className="card">
+    <section className="org-workspace-shell">
+      <div className="card org-workspace-stats-card">
         <h3>Stats</h3>
         <div className="org-stats-grid">
           <div className="org-stat-tile">
@@ -157,7 +171,7 @@ export function OrgWorkspace({
           </div>
           <div className="org-stat-tile">
             <span className="org-stat-label">API tokens</span>
-            <strong className="org-stat-value">{org.apiKeyCount}</strong>
+            <strong className="org-stat-value">{apiTokenCount}</strong>
           </div>
           <div className="org-stat-tile">
             <span className="org-stat-label">Admins</span>
@@ -166,32 +180,36 @@ export function OrgWorkspace({
         </div>
       </div>
 
-      <div className="card">
-        <div className="org-admins-header">
-          <h3>Admins ({admins.length})</h3>
-          <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
-            + New Admin
-          </button>
-        </div>
-        {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
-        {generatedPassword ? (
-          <p>
-            One-time generated password: <code>{generatedPassword}</code>
-          </p>
-        ) : null}
-        {resetPasswordReveal ? (
-          <p>
-            Reset password for <strong>{resetPasswordReveal.username}</strong>:{" "}
-            <code>{resetPasswordReveal.password}</code>
-          </p>
-        ) : null}
-        {admins.length === 0 ? <p>No admins assigned.</p> : null}
-        {admins.map((admin) => (
-          <div key={admin.id} style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}>
-            <div className="org-admin-row">
-              <p className="org-admin-identity">
-                <strong>{admin.user.username}</strong> ({admin.user.email})
-              </p>
+      <div className="org-workspace-columns">
+        <div className="card">
+          <div className="org-admins-header">
+            <h3>Admins ({admins.length})</h3>
+            <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
+              + New Admin
+            </button>
+          </div>
+          {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
+          {generatedPassword ? (
+            <p>
+              One-time generated password: <code>{generatedPassword}</code>
+            </p>
+          ) : null}
+          {resetPasswordReveal ? (
+            <p>
+              Reset password for <strong>{resetPasswordReveal.username}</strong>:{" "}
+              <code>{resetPasswordReveal.password}</code>
+            </p>
+          ) : null}
+          {admins.length === 0 ? <p>No admins assigned.</p> : null}
+          {admins.map((admin) => (
+            <div
+              key={admin.id}
+              style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}
+            >
+              <div className="org-admin-row">
+                <p className="org-admin-identity">
+                  <strong>{admin.user.username}</strong> ({admin.user.email})
+                </p>
                 <div className="org-admin-actions">
                   {canResetAdminPasswords ? (
                     <button
@@ -199,20 +217,29 @@ export function OrgWorkspace({
                       type="button"
                       onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
                     >
-                      Reset password
+                      reset
                     </button>
                   ) : null}
                   <button
-                    className="org-admin-link-button org-admin-link-button-danger"
+                    className="org-admin-delete-x"
                     type="button"
                     onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
+                    aria-label={`Delete user ${admin.user.username}`}
+                    title={`Delete user ${admin.user.username}`}
                   >
-                    Delete user
-                </button>
+                    ×
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <ApiKeysManager
+          organizationId={org.id}
+          initialApiKeys={initialApiTokens}
+          onCountChange={setApiTokenCount}
+        />
       </div>
 
       {showCreateAdminModal ? (
@@ -241,6 +268,6 @@ export function OrgWorkspace({
           </div>
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
