@@ -6,6 +6,7 @@ import { badRequest, forbidden, notFound } from "@/lib/http";
 import { readBody } from "@/lib/request";
 import { prisma } from "@/lib/db";
 import { deleteTemplate, updateTemplate } from "@/lib/services/template-service";
+import { writeAuditLog } from "@/lib/services/audit-service";
 
 export async function PATCH(
   request: Request,
@@ -58,6 +59,20 @@ export async function PATCH(
       imageAlt
     });
 
+    await writeAuditLog({
+      organizationId: existing.organizationId,
+      actorUserId: auth.user.id,
+      action: "template.updated",
+      entityType: "Template",
+      entityId: template.id,
+      metadata: {
+        previousType: existing.type,
+        nextType: template.type,
+        previousName: existing.name,
+        nextName: template.name
+      }
+    });
+
     return NextResponse.json({ template });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -92,5 +107,15 @@ export async function DELETE(
   }
 
   await deleteTemplate(templateId);
+
+  await writeAuditLog({
+    organizationId: existing.organizationId,
+    actorUserId: auth.user.id,
+    action: "template.deleted",
+    entityType: "Template",
+    entityId: existing.id,
+    metadata: { type: existing.type, name: existing.name }
+  });
+
   return NextResponse.json({ ok: true });
 }

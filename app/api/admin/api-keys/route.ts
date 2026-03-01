@@ -4,6 +4,7 @@ import { canAccessOrganization, getDefaultOrganizationId } from "@/lib/auth/rbac
 import { badRequest, forbidden } from "@/lib/http";
 import { readBody } from "@/lib/request";
 import { createApiKey, listApiKeys } from "@/lib/services/api-key-service";
+import { writeAuditLog } from "@/lib/services/audit-service";
 
 function resolveOrgId(userId: string | null, fallbackId: string | null) {
   return userId || fallbackId;
@@ -58,6 +59,15 @@ export async function POST(request: Request) {
     createdByUserId: auth.user.id,
     label,
     scopes
+  });
+
+  await writeAuditLog({
+    organizationId,
+    actorUserId: auth.user.id,
+    action: "api_key.created",
+    entityType: "OrganizationApiKey",
+    entityId: apiKey.id,
+    metadata: { label: apiKey.label, prefix: apiKey.prefix, scopes: apiKey.scopes }
   });
 
   return NextResponse.json(

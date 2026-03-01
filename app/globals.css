@@ -65,6 +65,23 @@ button.danger {
   background: #b91c1c;
 }
 
+.button-inline {
+  width: auto;
+  margin: 0;
+}
+
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-card-header h1 {
+  margin: 0;
+}
+
 .grid {
   display: grid;
   gap: 1rem;

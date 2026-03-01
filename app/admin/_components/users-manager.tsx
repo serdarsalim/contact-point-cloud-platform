@@ -24,7 +24,6 @@ export function UsersManager({
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [organizationId, setOrganizationId] = useState(organizations[0]?.id || "");
-  const [role, setRole] = useState<"ADMIN" | "SUPERADMIN">("ADMIN");
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +44,7 @@ export function UsersManager({
     const response = await fetch("/api/admin/users", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ username, email, organizationId, role })
+      body: JSON.stringify({ username, email, organizationId })
     });
 
     const data = (await response.json().catch(() => null)) as
@@ -66,7 +65,7 @@ export function UsersManager({
   return (
     <div className="grid cols-2">
       <form className="card" onSubmit={createUser}>
-        <h3>Create user (superadmin only)</h3>
+        <h3>Create org admin (superadmin only)</h3>
         <label>
           Username
           <input value={username} onChange={(event) => setUsername(event.target.value)} required />
@@ -83,13 +82,6 @@ export function UsersManager({
                 {org.name}
               </option>
             ))}
-          </select>
-        </label>
-        <label>
-          Role
-          <select value={role} onChange={(event) => setRole(event.target.value as "ADMIN" | "SUPERADMIN") }>
-            <option value="ADMIN">ADMIN</option>
-            <option value="SUPERADMIN">SUPERADMIN</option>
           </select>
         </label>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}

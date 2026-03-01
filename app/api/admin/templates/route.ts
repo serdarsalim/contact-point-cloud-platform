@@ -5,6 +5,7 @@ import { canAccessOrganization, getDefaultOrganizationId, isSuperadmin } from "@
 import { badRequest, forbidden } from "@/lib/http";
 import { readBody } from "@/lib/request";
 import { createTemplate, listTemplates } from "@/lib/services/template-service";
+import { writeAuditLog } from "@/lib/services/audit-service";
 
 function parseTemplateType(value: string | null): TemplateType | undefined {
   if (!value) return undefined;
@@ -89,6 +90,15 @@ export async function POST(request: Request) {
       body: bodyText,
       imageAssetId,
       imageAlt
+    });
+
+    await writeAuditLog({
+      organizationId,
+      actorUserId: auth.user.id,
+      action: "template.created",
+      entityType: "Template",
+      entityId: template.id,
+      metadata: { type: template.type, name: template.name }
     });
 
     return NextResponse.json({ template }, { status: 201 });

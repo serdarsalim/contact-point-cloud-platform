@@ -1,6 +1,7 @@
 import { MembershipRole, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { toSlug } from "@/lib/slug";
+import { generatePassword, hashPassword } from "@/lib/auth/password";
 
 export async function listOrganizations() {
   return prisma.organization.findMany({
@@ -25,6 +26,43 @@ export async function createOrganization(input: { name: string; slug?: string })
       name: input.name.trim(),
       slug
     }
+  });
+}
+
+export async function createOrganizationWithInitialAdmin(input: {
+  name: string;
+  slug?: string;
+  adminUsername: string;
+  adminEmail: string;
+}) {
+  const slug = input.slug ? toSlug(input.slug) : toSlug(input.name);
+  const generatedPassword = generatePassword(20);
+
+  return prisma.$transaction(async (tx) => {
+    const organization = await tx.organization.create({
+      data: {
+        name: input.name.trim(),
+        slug
+      }
+    });
+
+    const adminUser = await tx.user.create({
+      data: {
+        username: input.adminUsername.trim(),
+        email: input.adminEmail.trim().toLowerCase(),
+        passwordHash: hashPassword(generatedPassword)
+      }
+    });
+
+    const membership = await tx.organizationMember.create({
+      data: {
+        organizationId: organization.id,
+        userId: adminUser.id,
+        role: MembershipRole.ADMIN
+      }
+    });
+
+    return { organization, adminUser, membership, generatedPassword };
   });
 }
 

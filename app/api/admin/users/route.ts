@@ -5,6 +5,7 @@ import { isSuperadmin } from "@/lib/auth/rbac";
 import { badRequest, forbidden } from "@/lib/http";
 import { readBody } from "@/lib/request";
 import { createUserWithGeneratedPassword, listUsersWithMemberships } from "@/lib/services/user-service";
+import { writeAuditLog } from "@/lib/services/audit-service";
 
 export async function GET() {
   const auth = await requireSessionUser();
@@ -36,14 +37,9 @@ export async function POST(request: Request) {
   const username = String(body.username || "").trim();
   const email = String(body.email || "").trim();
   const organizationId = body.organizationId ? String(body.organizationId).trim() : undefined;
-  const role = body.role ? String(body.role).toUpperCase() : MembershipRole.ADMIN;
 
-  if (!username || !email) {
-    return badRequest("username and email are required");
-  }
-
-  if (organizationId && ![MembershipRole.ADMIN, MembershipRole.SUPERADMIN].includes(role as MembershipRole)) {
-    return badRequest("role must be ADMIN or SUPERADMIN");
+  if (!username || !email || !organizationId) {
+    return badRequest("username, email, and organizationId are required");
   }
 
   try {
@@ -51,7 +47,16 @@ export async function POST(request: Request) {
       username,
       email,
       organizationId,
-      role: role as MembershipRole
+      role: MembershipRole.ADMIN
+    });
+
+    await writeAuditLog({
+      organizationId,
+      actorUserId: auth.user.id,
+      action: "org.admin.created",
+      entityType: "User",
+      entityId: user.id,
+      metadata: { username: user.username, email: user.email }
     });
 
     return NextResponse.json(

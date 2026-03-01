@@ -1,47 +1,86 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { FormEvent, useMemo, useState } from "react";
 
 type Org = {
   id: string;
   name: string;
   slug: string;
+  memberCount: number;
 };
 
 export function OrgsManager({ initialOrganizations }: { initialOrganizations: Org[] }) {
   const [organizations, setOrganizations] = useState(initialOrganizations);
+  const [search, setSearch] = useState("");
   const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [adminOrgId, setAdminOrgId] = useState(initialOrganizations[0]?.id || "");
-  const [adminUserId, setAdminUserId] = useState("");
-  const [adminRole, setAdminRole] = useState<"ADMIN" | "SUPERADMIN">("ADMIN");
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const filteredOrgs = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return organizations;
+    }
+
+    return organizations.filter(
+      (org) => org.name.toLowerCase().includes(query) || org.slug.toLowerCase().includes(query)
+    );
+  }, [organizations, search]);
 
   async function refresh() {
     const response = await fetch("/api/admin/orgs");
     if (!response.ok) return;
-    const data = (await response.json()) as { organizations: Org[] };
-    setOrganizations(data.organizations);
+    const data = (await response.json()) as {
+      organizations: Array<{
+        id: string;
+        name: string;
+        slug: string;
+        _count: { templates: number; members: number };
+      }>;
+    };
+
+    setOrganizations(
+      data.organizations.map((org) => ({
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        memberCount: org._count.members
+      }))
+    );
   }
 
   async function createOrg(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setGeneratedPassword(null);
 
     const response = await fetch("/api/admin/orgs", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, slug })
+      body: JSON.stringify({
+        name,
+        adminUsername: adminUsername || undefined,
+        adminEmail: adminEmail || undefined
+      })
     });
 
+    const data = (await response.json().catch(() => null)) as
+      | { error?: string; generatedPassword?: string }
+      | null;
+
     if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
       setError(data?.error || "Failed to create organization");
       return;
     }
 
     setName("");
-    setSlug("");
+    setAdminUsername("");
+    setAdminEmail("");
+    setGeneratedPassword(data?.generatedPassword || null);
     await refresh();
   }
 
@@ -51,100 +90,70 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
     await refresh();
   }
 
-  async function assignAdmin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-
-    const response = await fetch(`/api/admin/orgs/${adminOrgId}/admins`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ userId: adminUserId, role: adminRole })
-    });
-
-    if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(data?.error || "Failed to assign admin");
-      return;
-    }
-
-    setAdminUserId("");
-  }
-
-  async function revokeAdmin() {
-    setError(null);
-
-    const response = await fetch(`/api/admin/orgs/${adminOrgId}/admins`, {
-      method: "DELETE",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ userId: adminUserId })
-    });
-
-    if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(data?.error || "Failed to revoke admin");
-      return;
-    }
-
-    setAdminUserId("");
-  }
-
   return (
-    <div className="grid">
+    <div className="grid cols-2">
       <form className="card" onSubmit={createOrg}>
         <h3>Create organization</h3>
+        <p style={{ marginTop: 0 }}>Creating an organization requires initial admin credentials.</p>
         <label>
-          Name
+          Organization name
           <input value={name} onChange={(event) => setName(event.target.value)} required />
         </label>
         <label>
-          Slug (optional)
-          <input value={slug} onChange={(event) => setSlug(event.target.value)} />
+          Initial admin username
+          <input value={adminUsername} onChange={(event) => setAdminUsername(event.target.value)} required />
+        </label>
+        <label>
+          Initial admin email
+          <input type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} required />
         </label>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
-        <button type="submit">Create</button>
+        <button type="submit">Create organization</button>
+        {generatedPassword ? (
+          <p>
+            Initial admin one-time password: <code>{generatedPassword}</code>
+          </p>
+        ) : null}
       </form>
 
       <div className="card">
         <h3>Organizations</h3>
-        {organizations.length === 0 ? <p>No organizations</p> : null}
-        {organizations.map((org) => (
-          <div key={org.id} style={{ marginBottom: "0.75rem" }}>
-            <strong>{org.name}</strong> <code>{org.slug}</code>
-            <button className="danger" type="button" onClick={() => deleteOrg(org.id)}>
-              Delete
-            </button>
+        <label>
+          Search
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by name or slug"
+          />
+        </label>
+        {filteredOrgs.length === 0 ? <p>No organizations found.</p> : null}
+        {filteredOrgs.map((org) => (
+          <div
+            key={org.id}
+            style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: "0.75rem", marginBottom: "0.75rem" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", alignItems: "center" }}>
+              <div>
+                <strong>{org.name}</strong>
+                <div>
+                  <code>{org.slug}</code>
+                </div>
+                <p style={{ margin: "0.25rem 0 0" }}>
+                  {org.memberCount} members
+                </p>
+              </div>
+              <div style={{ display: "grid", gap: "0.35rem", minWidth: 180 }}>
+                <Link href={`/admin/orgs/${org.id}`}>Open workspace</Link>
+                <Link href={`/admin/templates?orgId=${org.id}`}>Open templates</Link>
+                <Link href={`/admin/api-keys?orgId=${org.id}`}>Open API keys</Link>
+                <button className="danger" type="button" onClick={() => deleteOrg(org.id)}>
+                  Delete org
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>
-
-      <form className="card" onSubmit={assignAdmin}>
-        <h3>Assign/Revoke admin</h3>
-        <label>
-          Organization
-          <select value={adminOrgId} onChange={(event) => setAdminOrgId(event.target.value)} required>
-            {organizations.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          User ID
-          <input value={adminUserId} onChange={(event) => setAdminUserId(event.target.value)} required />
-        </label>
-        <label>
-          Role
-          <select value={adminRole} onChange={(event) => setAdminRole(event.target.value as "ADMIN" | "SUPERADMIN")}>
-            <option value="ADMIN">ADMIN</option>
-            <option value="SUPERADMIN">SUPERADMIN</option>
-          </select>
-        </label>
-        <button type="submit">Assign admin</button>
-        <button className="danger" type="button" onClick={() => void revokeAdmin()}>
-          Revoke admin
-        </button>
-      </form>
     </div>
   );
 }

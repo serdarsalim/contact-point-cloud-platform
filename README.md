@@ -25,14 +25,16 @@ Proprietary software. All rights reserved.
   - `GET /api/v1/extension/templates?type=EMAIL|WHATSAPP|NOTE`
 - Admin APIs skeleton:
   - Organizations (SUPERADMIN)
-  - Organization admin assignment (SUPERADMIN)
+  - Organization admin assignment (SUPERADMIN global + ADMIN in own org)
   - Templates CRUD (ADMIN own org, SUPERADMIN global)
   - API key create/list/revoke/rotate (ADMIN own org, SUPERADMIN global)
   - User creation with generated password (SUPERADMIN)
 - Admin pages skeleton under `/admin/*`
 - Email template editor uses TinyMCE (links/images by URL), while WhatsApp/Note remain plain text
+- Superadmin org workspace at `/admin/orgs/:orgId` for multi-admin management
 - One-time reveal token creation and rotation behavior
 - `lastUsedAt` updates on successful extension token-auth requests
+- Basic audit logging for org/admin/template/API-key management actions
 
 ## Setup
 
@@ -86,16 +88,18 @@ If your Neon DB is not reachable yet, schema and migration files are already sca
 
 - `SUPERADMIN`
   - Organization CRUD
-  - Assign/revoke org admins
+  - Create/revoke multiple org admins per organization
   - Manage templates/API keys for any org
-  - Create users with generated password
+  - Optionally create initial org admin during org creation
 - `ADMIN`
-  - Manage templates and API keys only for assigned organizations
+  - Manage org admins, templates and API keys only for assigned organizations
 
 ### Enforcement
 
 - Web admin routes require a valid session cookie.
 - Admin APIs resolve org scope from membership checks.
+- Admin assignment endpoints never allow granting `SUPERADMIN`.
+- Removing the last `ADMIN` from an organization is blocked.
 - Extension APIs never trust client-supplied org input; org is derived from bearer token.
 
 ## Token Lifecycle and Offboarding
@@ -182,7 +186,8 @@ Success:
 - `GET /api/admin/me`
 - `GET/POST /api/admin/orgs`
 - `PATCH/DELETE /api/admin/orgs/:orgId`
-- `POST/DELETE /api/admin/orgs/:orgId/admins`
+- `GET/POST/DELETE /api/admin/orgs/:orgId/admins`
+- `POST /api/admin/orgs/:orgId/admins/:userId/reset-password`
 - `GET/POST /api/admin/templates`
 - `PATCH/DELETE /api/admin/templates/:templateId`
 - `GET/POST /api/admin/api-keys`

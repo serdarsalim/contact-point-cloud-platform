@@ -5,6 +5,7 @@ import { canAccessOrganization } from "@/lib/auth/rbac";
 import { forbidden, notFound } from "@/lib/http";
 import { prisma } from "@/lib/db";
 import { revokeApiKey } from "@/lib/services/api-key-service";
+import { writeAuditLog } from "@/lib/services/audit-service";
 
 export async function POST(
   _request: Request,
@@ -29,6 +30,16 @@ export async function POST(
 
   try {
     const apiKey = await revokeApiKey(keyId);
+
+    await writeAuditLog({
+      organizationId: key.organizationId,
+      actorUserId: auth.user.id,
+      action: "api_key.revoked",
+      entityType: "OrganizationApiKey",
+      entityId: apiKey.id,
+      metadata: { label: apiKey.label, prefix: apiKey.prefix }
+    });
+
     return NextResponse.json({ apiKey });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

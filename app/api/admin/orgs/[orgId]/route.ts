@@ -5,6 +5,8 @@ import { isSuperadmin } from "@/lib/auth/rbac";
 import { badRequest, forbidden, notFound } from "@/lib/http";
 import { readBody } from "@/lib/request";
 import { deleteOrganization, updateOrganization } from "@/lib/services/org-service";
+import { prisma } from "@/lib/db";
+import { writeAuditLog } from "@/lib/services/audit-service";
 
 export async function PATCH(
   request: Request,
@@ -31,6 +33,16 @@ export async function PATCH(
 
   try {
     const organization = await updateOrganization(orgId, { name, slug });
+
+    await writeAuditLog({
+      organizationId: organization.id,
+      actorUserId: auth.user.id,
+      action: "org.updated",
+      entityType: "Organization",
+      entityId: organization.id,
+      metadata: { name: organization.name, slug: organization.slug }
+    });
+
     return NextResponse.json({ organization });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -62,7 +74,21 @@ export async function DELETE(
   const { orgId } = await params;
 
   try {
+    const existing = await prisma.organization.findUnique({
+      where: { id: orgId }
+    });
+
     await deleteOrganization(orgId);
+
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: auth.user.id,
+      action: "org.deleted",
+      entityType: "Organization",
+      entityId: orgId,
+      metadata: { name: existing?.name || null, slug: existing?.slug || null }
+    });
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

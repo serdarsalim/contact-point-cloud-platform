@@ -25,6 +25,7 @@ model User {
   passwordHash   String
   memberships    OrganizationMember[]
   createdApiKeys OrganizationApiKey[] @relation("ApiKeyCreator")
+  auditLogs      AuditLog[]           @relation("AuditActor")
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 }
@@ -36,6 +37,7 @@ model Organization {
   members   OrganizationMember[]
   apiKeys   OrganizationApiKey[]
   templates Template[]
+  auditLogs AuditLog[]
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
 }
@@ -90,4 +92,22 @@ model Template {
 
   @@index([organizationId, type])
   @@unique([organizationId, type, name])
+}
+
+model AuditLog {
+  id             String        @id @default(cuid())
+  organizationId String?
+  actorUserId    String?
+  action         String
+  entityType     String
+  entityId       String?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  actorUser    User?         @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
 }
