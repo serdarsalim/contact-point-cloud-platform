@@ -37,7 +37,15 @@ export default async function OrganizationWorkspacePage({
   }
 
   const organization = await prisma.organization.findUnique({
-    where: { id: orgId }
+    where: { id: orgId },
+    include: {
+      _count: {
+        select: {
+          templates: true,
+          apiKeys: true
+        }
+      }
+    }
   });
 
   if (!organization) {
@@ -55,7 +63,13 @@ export default async function OrganizationWorkspacePage({
         userEmail={user.email}
       />
       <OrgWorkspace
-        org={{ id: organization.id, name: organization.name, slug: organization.slug }}
+        org={{
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+          templateCount: organization._count.templates,
+          apiKeyCount: organization._count.apiKeys
+        }}
         canResetAdminPasswords={superadmin}
         initialAdmins={admins.map((admin) => ({
           id: admin.id,

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 type OrgAdmin = {
@@ -20,11 +19,12 @@ export function OrgWorkspace({
   initialAdmins,
   canResetAdminPasswords
 }: {
-  org: { id: string; name: string; slug: string };
+  org: { id: string; name: string; slug: string; templateCount: number; apiKeyCount: number };
   initialAdmins: OrgAdmin[];
   canResetAdminPasswords: boolean;
 }) {
   const [admins, setAdmins] = useState(initialAdmins);
+  const [showCreateAdminModal, setShowCreateAdminModal] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
@@ -86,6 +86,7 @@ export function OrgWorkspace({
     setUsername("");
     setEmail("");
     setGeneratedPassword(data?.generatedPassword || null);
+    setShowCreateAdminModal(false);
     await refreshAdmins();
   }
 
@@ -139,79 +140,107 @@ export function OrgWorkspace({
     });
   }
 
+  function closeCreateAdminModal() {
+    setShowCreateAdminModal(false);
+    setUsername("");
+    setEmail("");
+  }
+
   return (
-    <div className="grid">
+    <div className="grid cols-2">
       <div className="card">
-        <h1 style={{ marginBottom: "0.25rem" }}>{org.name}</h1>
-        <p style={{ margin: 0 }}>
-          <code>{org.slug}</code>
-        </p>
-        <div className="grid cols-3" style={{ marginTop: "1rem" }}>
-          <Link href="/admin/orgs">Back to org directory</Link>
-          <Link href={`/admin/templates?orgId=${org.id}`}>Manage templates</Link>
-          <Link href={`/admin/api-keys?orgId=${org.id}`}>Manage API keys</Link>
+        <h3>Organization stats</h3>
+        <div className="org-stats-grid">
+          <div className="org-stat-tile">
+            <span className="org-stat-label">Templates</span>
+            <strong className="org-stat-value">{org.templateCount}</strong>
+          </div>
+          <div className="org-stat-tile">
+            <span className="org-stat-label">API tokens</span>
+            <strong className="org-stat-value">{org.apiKeyCount}</strong>
+          </div>
+          <div className="org-stat-tile">
+            <span className="org-stat-label">Admins</span>
+            <strong className="org-stat-value">{admins.length}</strong>
+          </div>
         </div>
       </div>
 
-      <div className="grid cols-2">
-        <form className="card" onSubmit={createAdmin}>
-          <h3>Create org admin</h3>
-          <p style={{ marginTop: 0 }}>Creates a new admin login credential for this organization.</p>
-          <label>
-            Username
-            <input value={username} onChange={(event) => setUsername(event.target.value)} required />
-          </label>
-          <label>
-            Email
-            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          </label>
-          {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
-          <button type="submit">Create admin</button>
-          {generatedPassword ? (
-            <p>
-              One-time generated password: <code>{generatedPassword}</code>
-            </p>
-          ) : null}
-          {resetPasswordReveal ? (
-            <p>
-              Reset password for <strong>{resetPasswordReveal.username}</strong>:{" "}
-              <code>{resetPasswordReveal.password}</code>
-            </p>
-          ) : null}
-        </form>
-
-        <div className="card">
+      <div className="card">
+        <div className="org-admins-header">
           <h3>Org admins ({admins.length})</h3>
-          {admins.length === 0 ? <p>No admins assigned.</p> : null}
-          {admins.map((admin) => (
-            <div key={admin.id} style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}>
-              <div className="org-admin-row">
-                <p className="org-admin-identity">
-                  <strong>{admin.user.username}</strong> ({admin.user.email})
-                </p>
-                <div className="org-admin-actions">
-                  {canResetAdminPasswords ? (
-                    <button
-                      className="secondary button-inline"
-                      type="button"
-                      onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
-                    >
-                      Reset password
-                    </button>
-                  ) : null}
+          <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
+            Create new admin
+          </button>
+        </div>
+        {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
+        {generatedPassword ? (
+          <p>
+            One-time generated password: <code>{generatedPassword}</code>
+          </p>
+        ) : null}
+        {resetPasswordReveal ? (
+          <p>
+            Reset password for <strong>{resetPasswordReveal.username}</strong>:{" "}
+            <code>{resetPasswordReveal.password}</code>
+          </p>
+        ) : null}
+        {admins.length === 0 ? <p>No admins assigned.</p> : null}
+        {admins.map((admin) => (
+          <div key={admin.id} style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}>
+            <div className="org-admin-row">
+              <p className="org-admin-identity">
+                <strong>{admin.user.username}</strong> ({admin.user.email})
+              </p>
+              <div className="org-admin-actions">
+                {canResetAdminPasswords ? (
                   <button
-                    className="danger button-inline"
+                    className="secondary button-inline"
                     type="button"
-                    onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
+                    onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
                   >
-                    Delete user
+                    Reset password
                   </button>
-                </div>
+                ) : null}
+                <button
+                  className="danger button-inline"
+                  type="button"
+                  onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
+                >
+                  Delete user
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
+
+      {showCreateAdminModal ? (
+        <div className="admin-modal-backdrop" onClick={closeCreateAdminModal}>
+          <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3>Create org admin</h3>
+              <button className="secondary button-inline" type="button" onClick={closeCreateAdminModal}>
+                Close
+              </button>
+            </div>
+            <form onSubmit={createAdmin}>
+              <label>
+                Username
+                <input value={username} onChange={(event) => setUsername(event.target.value)} required />
+              </label>
+              <label>
+                Email
+                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+              </label>
+              {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
+              <button className="button-inline" type="submit">
+                Create admin
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
