@@ -20,14 +20,26 @@ type OrgAdmin = {
   };
 };
 
+type AdminUser = {
+  id: string;
+  username: string;
+  email: string;
+  role: "ADMIN" | "SUPERADMIN";
+};
+
 export function OrgsManager({ initialOrganizations }: { initialOrganizations: Org[] }) {
   const [organizations, setOrganizations] = useState(initialOrganizations);
   const [selectedOrgId, setSelectedOrgId] = useState(initialOrganizations[0]?.id || "");
   const [search, setSearch] = useState("");
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [name, setName] = useState("");
+  const [adminMode, setAdminMode] = useState<"existing" | "new">("existing");
+  const [existingAdminUserId, setExistingAdminUserId] = useState("");
+  const [existingAdminSearch, setExistingAdminSearch] = useState("");
   const [adminUsername, setAdminUsername] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
+  const [availableAdmins, setAvailableAdmins] = useState<AdminUser[]>([]);
+  const [loadingAdminsList, setLoadingAdminsList] = useState(false);
   const [admins, setAdmins] = useState<OrgAdmin[]>([]);
   const [adminsLoading, setAdminsLoading] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
@@ -46,6 +58,19 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
 
     return organizations.filter((org) => org.name.toLowerCase().includes(query));
   }, [organizations, search]);
+
+  const filteredAvailableAdmins = useMemo(() => {
+    const onlyAdmins = availableAdmins.filter((user) => user.role === "ADMIN");
+    const query = existingAdminSearch.trim().toLowerCase();
+
+    if (!query) {
+      return onlyAdmins;
+    }
+
+    return onlyAdmins.filter(
+      (user) => user.username.toLowerCase().includes(query) || user.email.toLowerCase().includes(query)
+    );
+  }, [availableAdmins, existingAdminSearch]);
 
   const selectedOrg = organizations.find((org) => org.id === selectedOrgId) || null;
 
@@ -87,6 +112,41 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
     };
   }, [selectedOrgId]);
 
+  useEffect(() => {
+    if (!showCreateModal) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadAdminUsers() {
+      setLoadingAdminsList(true);
+      const response = await fetch("/api/admin/users");
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string; users?: Array<{ id: string; username: string; email: string; role: "ADMIN" | "SUPERADMIN" }> }
+        | null;
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!response.ok) {
+        setLoadingAdminsList(false);
+        setError(data?.error || "Failed to load existing admins");
+        return;
+      }
+
+      setAvailableAdmins(data?.users || []);
+      setLoadingAdminsList(false);
+    }
+
+    void loadAdminUsers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showCreateModal]);
+
   async function refresh() {
     const response = await fetch("/api/admin/orgs");
     if (!response.ok) return null;
@@ -120,6 +180,7 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         name,
+        adminUserId: adminMode === "existing" ? existingAdminUserId || undefined : undefined,
         adminUsername: adminUsername || undefined,
         adminEmail: adminEmail || undefined
       })
@@ -135,13 +196,16 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
     }
 
     setName("");
+    setAdminMode("existing");
+    setExistingAdminUserId("");
+    setExistingAdminSearch("");
     setAdminUsername("");
     setAdminEmail("");
     setGeneratedPassword(data?.generatedPassword || null);
     const refreshed = await refresh();
     const nextSelectedOrgId = data?.organization?.id || refreshed?.[0]?.id || "";
     setSelectedOrgId(nextSelectedOrgId);
-    setShowCreateForm(false);
+    setShowCreateModal(false);
   }
 
   async function deleteOrg(orgId: string, orgName: string) {
@@ -220,29 +284,14 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
           <button
             className="button-inline orgs-create-toggle"
             type="button"
-            onClick={() => setShowCreateForm((prev) => !prev)}
+            onClick={() => {
+              setError(null);
+              setShowCreateModal(true);
+            }}
           >
-            {showCreateForm ? "Close" : "+ Add"}
+            + Add
           </button>
         </div>
-
-        {showCreateForm ? (
-          <form className="org-create-form" onSubmit={createOrg}>
-            <label>
-              Organization name
-              <input value={name} onChange={(event) => setName(event.target.value)} required />
-            </label>
-            <label>
-              Initial admin username
-              <input value={adminUsername} onChange={(event) => setAdminUsername(event.target.value)} required />
-            </label>
-            <label>
-              Initial admin email
-              <input type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} required />
-            </label>
-            <button type="submit">Create organization</button>
-          </form>
-        ) : null}
 
         {generatedPassword ? (
           <p className="orgs-password-reveal">
@@ -359,6 +408,82 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
               <button type="submit" disabled={renaming}>
                 {renaming ? "Saving..." : "Save name"}
               </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {showCreateModal ? (
+        <div className="admin-modal-backdrop" onClick={() => setShowCreateModal(false)}>
+          <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3>Create organization</h3>
+              <button className="button-inline" type="button" onClick={() => setShowCreateModal(false)}>
+                Close
+              </button>
+            </div>
+            <form className="org-create-form" onSubmit={createOrg}>
+              <label>
+                Organization name
+                <input value={name} onChange={(event) => setName(event.target.value)} required />
+              </label>
+              <div className="org-create-admin-mode">
+                <label>
+                  <input
+                    type="radio"
+                    name="adminMode"
+                    checked={adminMode === "existing"}
+                    onChange={() => setAdminMode("existing")}
+                  />
+                  Use existing admin
+                </label>
+                <label>
+                  <input type="radio" name="adminMode" checked={adminMode === "new"} onChange={() => setAdminMode("new")} />
+                  Create new admin
+                </label>
+              </div>
+
+              {adminMode === "existing" ? (
+                <>
+                  <label>
+                    Find admin
+                    <input
+                      value={existingAdminSearch}
+                      onChange={(event) => setExistingAdminSearch(event.target.value)}
+                      placeholder="Search by username or email"
+                    />
+                  </label>
+                  <label>
+                    Select admin
+                    <select
+                      value={existingAdminUserId}
+                      onChange={(event) => setExistingAdminUserId(event.target.value)}
+                      required
+                      disabled={loadingAdminsList}
+                    >
+                      <option value="">{loadingAdminsList ? "Loading admins..." : "Select an admin"}</option>
+                      {filteredAvailableAdmins.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.username} ({user.email})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </>
+              ) : (
+                <>
+                  <label>
+                    Initial admin username
+                    <input value={adminUsername} onChange={(event) => setAdminUsername(event.target.value)} required />
+                  </label>
+                  <label>
+                    Initial admin email
+                    <input type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} required />
+                  </label>
+                </>
+              )}
+
+              <button type="submit">Create organization</button>
             </form>
           </div>
         </div>

@@ -19,7 +19,26 @@ export async function GET() {
   }
 
   const users = await listUsersWithMemberships();
-  return NextResponse.json({ users });
+  return NextResponse.json({
+    users: users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      memberships: user.memberships.map((membership) => ({
+        id: membership.id,
+        organizationId: membership.organizationId,
+        role: membership.role,
+        createdAt: membership.createdAt,
+        organization: {
+          id: membership.organization.id,
+          name: membership.organization.name,
+          slug: membership.organization.slug
+        }
+      }))
+    }))
+  });
 }
 
 export async function POST(request: Request) {

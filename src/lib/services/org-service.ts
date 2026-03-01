@@ -67,6 +67,36 @@ export async function createOrganizationWithInitialAdmin(input: {
   });
 }
 
+export async function createOrganizationWithExistingAdmin(input: {
+  name: string;
+  slug?: string;
+  adminUserId: string;
+}) {
+  const slug = input.slug ? toSlug(input.slug) : toSlug(input.name);
+
+  return prisma.$transaction(async (tx) => {
+    const organization = await tx.organization.create({
+      data: {
+        name: input.name.trim(),
+        slug
+      }
+    });
+
+    const membership = await tx.organizationMember.create({
+      data: {
+        organizationId: organization.id,
+        userId: input.adminUserId,
+        role: MembershipRole.ADMIN
+      },
+      include: {
+        user: true
+      }
+    });
+
+    return { organization, membership, adminUser: membership.user };
+  });
+}
+
 export async function updateOrganization(orgId: string, input: { name?: string; slug?: string }) {
   const data: Prisma.OrganizationUpdateInput = {};
 

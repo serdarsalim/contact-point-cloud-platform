@@ -4,7 +4,11 @@ import { requireSessionUser } from "@/lib/auth/admin-auth";
 import { isSuperadmin } from "@/lib/auth/rbac";
 import { badRequest, forbidden } from "@/lib/http";
 import { readBody } from "@/lib/request";
-import { createOrganizationWithInitialAdmin, listOrganizations } from "@/lib/services/org-service";
+import {
+  createOrganizationWithExistingAdmin,
+  createOrganizationWithInitialAdmin,
+  listOrganizations
+} from "@/lib/services/org-service";
 import { writeAuditLog } from "@/lib/services/audit-service";
 
 export async function GET() {
@@ -36,6 +40,7 @@ export async function POST(request: Request) {
   const body = await readBody(request);
   const name = String(body.name || "").trim();
   const slug = String(body.slug || "").trim();
+  const adminUserId = body.adminUserId ? String(body.adminUserId).trim() : "";
   const adminUsername = body.adminUsername ? String(body.adminUsername).trim() : "";
   const adminEmail = body.adminEmail ? String(body.adminEmail).trim() : "";
 
@@ -43,17 +48,23 @@ export async function POST(request: Request) {
     return badRequest("name is required");
   }
 
-  if (!adminUsername || !adminEmail) {
-    return badRequest("adminUsername and adminEmail are required");
+  if (!adminUserId && (!adminUsername || !adminEmail)) {
+    return badRequest("Provide adminUserId for an existing admin, or adminUsername+adminEmail");
   }
 
   try {
-    const created = await createOrganizationWithInitialAdmin({
-      name,
-      slug: slug || undefined,
-      adminUsername,
-      adminEmail
-    });
+    const created = adminUserId
+      ? await createOrganizationWithExistingAdmin({
+          name,
+          slug: slug || undefined,
+          adminUserId
+        })
+      : await createOrganizationWithInitialAdmin({
+          name,
+          slug: slug || undefined,
+          adminUsername,
+          adminEmail
+        });
 
     await writeAuditLog({
       organizationId: created.organization.id,
@@ -73,14 +84,18 @@ export async function POST(request: Request) {
         organization: created.organization,
         adminUser: created.adminUser,
         membership: created.membership,
-        generatedPassword: created.generatedPassword,
-        passwordReveal: "one-time"
+        generatedPassword: "generatedPassword" in created ? created.generatedPassword : null,
+        passwordReveal: "generatedPassword" in created ? "one-time" : null
       },
       { status: 201 }
     );
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return badRequest("Organization slug/name or admin username/email must be unique");
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return badRequest("Selected admin user does not exist");
     }
 
     throw error;

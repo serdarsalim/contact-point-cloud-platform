@@ -420,6 +420,23 @@ button.danger {
   margin-bottom: 0.85rem;
 }
 
+.org-create-admin-mode {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.2rem 0 0.35rem;
+}
+
+.org-create-admin-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
 .orgs-workspace-content {
   display: grid;
   gap: 1rem;
