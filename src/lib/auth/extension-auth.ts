@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashApiToken } from "@/lib/tokens";
+import { consumeRateLimit, getClientIp } from "@/lib/security/rate-limit";
+import { tooManyRequests } from "@/lib/http";
 
 export async function authenticateExtensionRequest(request: Request) {
+  const ip = getClientIp(request);
+  const requestLimit = consumeRateLimit(`ext:req:${ip}`, { windowMs: 60 * 1000, max: 240 });
+  if (!requestLimit.allowed) {
+    return {
+      apiKey: null,
+      error: tooManyRequests("Too many extension requests. Try again shortly.", requestLimit.retryAfterSeconds)
+    };
+  }
+
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
@@ -55,6 +66,14 @@ export async function authenticateExtensionRequest(request: Request) {
   });
 
   if (!apiKey) {
+    const invalidLimit = consumeRateLimit(`ext:invalid:${ip}`, { windowMs: 15 * 60 * 1000, max: 60 });
+    if (!invalidLimit.allowed) {
+      return {
+        apiKey: null,
+        error: tooManyRequests("Too many invalid token attempts.", invalidLimit.retryAfterSeconds)
+      };
+    }
+
     return {
       apiKey: null,
       error: NextResponse.json(

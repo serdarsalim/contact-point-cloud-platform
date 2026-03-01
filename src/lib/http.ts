@@ -16,6 +16,16 @@ export function serverError(message = "Internal server error") {
   return NextResponse.json({ error: message }, { status: 500 });
 }
 
+export function tooManyRequests(message = "Too many requests", retryAfterSeconds?: number) {
+  const response = NextResponse.json({ error: message }, { status: 429 });
+
+  if (retryAfterSeconds && Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    response.headers.set("Retry-After", String(Math.ceil(retryAfterSeconds)));
+  }
+
+  return response;
+}
+
 export function normalizeError(error: unknown) {
   if (error instanceof Error) {
     return error.message;
