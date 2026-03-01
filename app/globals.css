@@ -407,6 +407,12 @@ button.danger {
   margin: 0;
 }
 
+.orgs-workspace-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
 .org-create-form {
   border: 1px solid #dbe3ef;
   border-radius: 10px;

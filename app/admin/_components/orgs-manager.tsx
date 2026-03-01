@@ -33,6 +33,9 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adminsError, setAdminsError] = useState<string | null>(null);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
 
   const filteredOrgs = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -167,6 +170,49 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
     }
   }
 
+  async function renameOrg(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedOrg) {
+      return;
+    }
+
+    const nextName = renameValue.trim();
+    if (!nextName) {
+      setError("Organization name is required");
+      return;
+    }
+
+    if (nextName === selectedOrg.name) {
+      setShowRenameModal(false);
+      return;
+    }
+
+    setRenaming(true);
+    setError(null);
+
+    const response = await fetch(`/api/admin/orgs/${selectedOrg.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: nextName })
+    });
+
+    const data = (await response.json().catch(() => null)) as
+      | { error?: string; organization?: { id: string; name: string } }
+      | null;
+
+    if (!response.ok) {
+      setError(data?.error || "Failed to rename organization");
+      setRenaming(false);
+      return;
+    }
+
+    await refresh();
+    setSelectedOrgId(data?.organization?.id || selectedOrg.id);
+    setShowRenameModal(false);
+    setRenaming(false);
+  }
+
   return (
     <section className="orgs-layout">
       <aside className="card orgs-sidebar">
@@ -233,13 +279,25 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
         <div className="orgs-workspace-header">
           <h3>{selectedOrg ? selectedOrg.name : "Organization workspace"}</h3>
           {selectedOrg ? (
-            <button
-              className="danger button-inline"
-              type="button"
-              onClick={() => deleteOrg(selectedOrg.id, selectedOrg.name)}
-            >
-              Delete org
-            </button>
+            <div className="orgs-workspace-header-actions">
+              <button
+                className="button-inline"
+                type="button"
+                onClick={() => {
+                  setRenameValue(selectedOrg.name);
+                  setShowRenameModal(true);
+                }}
+              >
+                Rename
+              </button>
+              <button
+                className="danger button-inline"
+                type="button"
+                onClick={() => deleteOrg(selectedOrg.id, selectedOrg.name)}
+              >
+                Delete org
+              </button>
+            </div>
           ) : null}
         </div>
 
@@ -283,6 +341,28 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
           <p>Select an organization from the left sidebar.</p>
         )}
       </section>
+
+      {showRenameModal && selectedOrg ? (
+        <div className="admin-modal-backdrop" onClick={() => setShowRenameModal(false)}>
+          <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3>Rename organization</h3>
+              <button className="button-inline" type="button" onClick={() => setShowRenameModal(false)}>
+                Close
+              </button>
+            </div>
+            <form onSubmit={renameOrg}>
+              <label>
+                Organization name
+                <input value={renameValue} onChange={(event) => setRenameValue(event.target.value)} required />
+              </label>
+              <button type="submit" disabled={renaming}>
+                {renaming ? "Saving..." : "Save name"}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
