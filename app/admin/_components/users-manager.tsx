@@ -11,6 +11,8 @@ type UserRow = {
   id: string;
   username: string;
   email: string;
+  role: "ADMIN" | "SUPERADMIN";
+  organizations: string[];
 };
 
 export function UsersManager({
@@ -26,14 +28,33 @@ export function UsersManager({
   const [organizationId, setOrganizationId] = useState(organizations[0]?.id || "");
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [promotingUserId, setPromotingUserId] = useState<string | null>(null);
 
   async function refreshUsers() {
     const response = await fetch("/api/admin/users");
     if (!response.ok) return;
     const data = (await response.json()) as {
-      users: Array<{ id: string; username: string; email: string }>;
+      users: Array<{
+        id: string;
+        username: string;
+        email: string;
+        role: "ADMIN" | "SUPERADMIN";
+        memberships: Array<{
+          organization: {
+            name: string;
+          };
+        }>;
+      }>;
     };
-    setUsers(data.users);
+    setUsers(
+      data.users.map((row) => ({
+        id: row.id,
+        username: row.username,
+        email: row.email,
+        role: row.role,
+        organizations: row.memberships.map((membership) => membership.organization.name)
+      }))
+    );
   }
 
   async function createUser(event: FormEvent<HTMLFormElement>) {
@@ -59,6 +80,31 @@ export function UsersManager({
     setUsername("");
     setEmail("");
     setGeneratedPassword(data?.generatedPassword || null);
+    await refreshUsers();
+  }
+
+  async function promoteToSuperadmin(userId: string) {
+    if (!confirm("Promote this user to SUPERADMIN? This will remove all org memberships.")) {
+      return;
+    }
+
+    setError(null);
+    setGeneratedPassword(null);
+    setPromotingUserId(userId);
+
+    const response = await fetch(`/api/admin/users/${userId}/promote`, {
+      method: "POST"
+    });
+
+    const data = (await response.json().catch(() => null)) as { error?: string } | null;
+
+    if (!response.ok) {
+      setError(data?.error || "Failed to promote user");
+      setPromotingUserId(null);
+      return;
+    }
+
+    setPromotingUserId(null);
     await refreshUsers();
   }
 
@@ -100,6 +146,21 @@ export function UsersManager({
           <div key={user.id} style={{ marginBottom: "0.65rem" }}>
             <strong>{user.username}</strong>
             <p style={{ margin: "0.15rem 0" }}>{user.email}</p>
+            <p style={{ margin: "0.15rem 0" }}>
+              Role: <strong>{user.role}</strong>
+            </p>
+            {user.role === "ADMIN" ? (
+              <p style={{ margin: "0.15rem 0" }}>Orgs: {user.organizations.join(", ") || "None"}</p>
+            ) : null}
+            {user.role === "ADMIN" ? (
+              <button
+                type="button"
+                onClick={() => promoteToSuperadmin(user.id)}
+                disabled={promotingUserId === user.id}
+              >
+                {promotingUserId === user.id ? "Promoting..." : "Promote to SUPERADMIN"}
+              </button>
+            ) : null}
           </div>
         ))}
       </div>

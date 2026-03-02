@@ -51,11 +51,66 @@ export async function POST(
   const body = await readBody(request);
   const userId = body.userId ? String(body.userId).trim() : "";
   const username = body.username ? String(body.username).trim() : "";
-  const email = body.email ? String(body.email).trim() : "";
+  const email = body.email ? String(body.email).trim().toLowerCase() : "";
 
   if (username || email) {
     if (!username || !email) {
       return badRequest("username and email are required");
+    }
+
+    const byUsername = await prisma.user.findUnique({
+      where: { username },
+      select: { id: true, username: true, email: true }
+    });
+    const byEmail = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, username: true, email: true }
+    });
+
+    if (byUsername && byEmail && byUsername.id !== byEmail.id) {
+      return badRequest("Username and email belong to different users");
+    }
+
+    if (byUsername && !byEmail && byUsername.email.toLowerCase() !== email) {
+      return badRequest("Username already exists with a different email");
+    }
+
+    if (byEmail && !byUsername && byEmail.username !== username) {
+      return badRequest("Email already exists with a different username");
+    }
+
+    const matchedUser = byUsername || byEmail;
+
+    if (matchedUser) {
+      try {
+        const membership = await assignOrganizationAdmin({
+          organizationId: orgId,
+          userId: matchedUser.id,
+          role: MembershipRole.ADMIN
+        });
+
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: auth.user.id,
+          action: "org.admin.assigned",
+          entityType: "OrganizationMember",
+          entityId: membership.id,
+          metadata: { assignedUserId: matchedUser.id, role: MembershipRole.ADMIN }
+        });
+
+        return NextResponse.json({
+          admin: matchedUser,
+          membership,
+          generatedPassword: null,
+          passwordReveal: null
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+          return notFound("Organization or user not found");
+        }
+
+        throw error;
+      }
     }
 
     try {

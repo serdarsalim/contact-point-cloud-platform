@@ -25,6 +25,7 @@ export function ApiKeysManager({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [label, setLabel] = useState("");
   const [tokenReveal, setTokenReveal] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export function ApiKeysManager({
     event.preventDefault();
     setError(null);
     setTokenReveal(null);
+    setCopyState("idle");
 
     const response = await fetch("/api/admin/api-keys", {
       method: "POST",
@@ -68,6 +70,7 @@ export function ApiKeysManager({
 
     setLabel("");
     setTokenReveal(data?.token || null);
+    setCopyState("idle");
     setShowCreateModal(false);
     await refresh();
   }
@@ -84,6 +87,7 @@ export function ApiKeysManager({
     }
 
     setTokenReveal(data?.token || null);
+    setCopyState("idle");
     await refresh();
   }
 
@@ -112,6 +116,30 @@ export function ApiKeysManager({
     setError(null);
   }
 
+  async function copyToken(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopyState("copied");
+    } catch {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = value;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        setCopyState("copied");
+      } catch {
+        setCopyState("error");
+        return;
+      }
+    }
+
+    setTimeout(() => {
+      setCopyState("idle");
+    }, 1500);
+  }
+
   return (
     <>
       <div className="card api-keys-card">
@@ -123,9 +151,22 @@ export function ApiKeysManager({
         </div>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         {tokenReveal ? (
-          <p>
-            Copy this access key now. You will not be able to view it again: <code>{tokenReveal}</code>
-          </p>
+          <div className="api-key-reveal-row">
+            <p style={{ margin: 0 }}>
+              Copy this access key now. You will not be able to view it again: <code>{tokenReveal}</code>
+            </p>
+            <button
+              className="api-key-action-link"
+              type="button"
+              onClick={() => copyToken(tokenReveal)}
+              aria-label="Copy access key"
+              title="Copy access key"
+            >
+              Copy key to clipboard
+            </button>
+            {copyState === "copied" ? <span className="api-key-copy-feedback">Copied</span> : null}
+            {copyState === "error" ? <span className="api-key-copy-feedback error">Copy failed</span> : null}
+          </div>
         ) : null}
         {apiKeys.length === 0 ? <p>No access keys yet.</p> : null}
         {apiKeys.length > 0 ? (

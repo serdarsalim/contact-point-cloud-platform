@@ -48,7 +48,9 @@ export default async function UsersPage() {
         initialUsers={users.map((row) => ({
           id: row.id,
           username: row.username,
-          email: row.email
+          email: row.email,
+          role: row.role,
+          organizations: row.memberships.map((membership) => membership.organization.name)
         }))}
       />
     </main>

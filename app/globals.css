@@ -678,6 +678,24 @@ button.danger {
   color: #0f172a;
 }
 
+.api-key-reveal-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.api-key-copy-feedback {
+  font-size: 0.85rem;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.api-key-copy-feedback.error {
+  color: #b91c1c;
+}
+
 .change-password-shell {
   display: flex;
   justify-content: center;

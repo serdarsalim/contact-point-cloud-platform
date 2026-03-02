@@ -217,7 +217,7 @@ export function OrgWorkspace({
                       type="button"
                       onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
                     >
-                      reset
+                      reset password
                     </button>
                   ) : null}
                   <button
@@ -246,7 +246,7 @@ export function OrgWorkspace({
         <div className="admin-modal-backdrop" onClick={closeCreateAdminModal}>
           <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>Create org admin</h3>
+              <h3>Create or add org admin</h3>
               <button className="secondary button-inline" type="button" onClick={closeCreateAdminModal}>
                 Close
               </button>
@@ -262,7 +262,7 @@ export function OrgWorkspace({
               </label>
               {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
               <button className="button-inline" type="submit">
-                Create admin
+                Create / add admin
               </button>
             </form>
           </div>
