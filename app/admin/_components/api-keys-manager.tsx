@@ -116,22 +116,22 @@ export function ApiKeysManager({
     <>
       <div className="card api-keys-card">
         <div className="api-keys-header">
-          <h3>Tokens</h3>
+          <h3>Team template access</h3>
           <button className="button-inline" type="button" onClick={() => setShowCreateModal(true)}>
-            Add token
+            Add access key
           </button>
         </div>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         {tokenReveal ? (
           <p>
-            One-time token reveal: <code>{tokenReveal}</code>
+            Copy this access key now. You will not be able to view it again: <code>{tokenReveal}</code>
           </p>
         ) : null}
-        {apiKeys.length === 0 ? <p>No tokens</p> : null}
+        {apiKeys.length === 0 ? <p>No access keys yet.</p> : null}
         {apiKeys.length > 0 ? (
           <div className="api-keys-table">
             <div className="api-keys-row api-keys-row-head">
-              <span>Name</span>
+              <span>Access key</span>
               <span>Last used</span>
               <span>Status</span>
               <span>Actions</span>
@@ -148,8 +148,8 @@ export function ApiKeysManager({
                     className="api-key-action-icon"
                     type="button"
                     onClick={() => rotate(key.id)}
-                    aria-label="Rotate token"
-                    title="Rotate token"
+                    aria-label="Rotate access key"
+                    title="Rotate access key"
                   >
                     {"\u21bb"}
                   </button>
@@ -157,8 +157,8 @@ export function ApiKeysManager({
                     className="api-key-delete-x"
                     type="button"
                     onClick={() => deleteKey(key.id, key.label)}
-                    aria-label={`Delete token ${key.label}`}
-                    title="Delete token"
+                    aria-label={`Delete access key ${key.label}`}
+                    title="Delete access key"
                   >
                     ×
                   </button>
@@ -173,19 +173,19 @@ export function ApiKeysManager({
         <div className="admin-modal-backdrop" onClick={closeCreateModal}>
           <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>Create API token</h3>
+              <h3>Create access key</h3>
               <button className="secondary button-inline" type="button" onClick={closeCreateModal}>
                 Close
               </button>
             </div>
             <form onSubmit={createKey}>
               <label>
-                Label (person/device)
+                Label (person or device)
                 <input value={label} onChange={(event) => setLabel(event.target.value)} required />
               </label>
               {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
               <button className="button-inline" type="submit">
-                Create token
+                Create access key
               </button>
             </form>
           </div>
