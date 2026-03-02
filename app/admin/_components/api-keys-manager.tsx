@@ -152,18 +152,19 @@ export function ApiKeysManager({
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         {tokenReveal ? (
           <div className="api-key-reveal-row">
-            <p style={{ margin: 0 }}>
-              Copy this access key now. You will not be able to view it again: <code>{tokenReveal}</code>
-            </p>
-            <button
-              className="api-key-action-link"
-              type="button"
-              onClick={() => copyToken(tokenReveal)}
-              aria-label="Copy access key"
-              title="Copy access key"
-            >
-              Copy key to clipboard
-            </button>
+            <p style={{ margin: 0 }}>Copy this access key now. You will not be able to view it again.</p>
+            <div className="api-key-reveal-token-row">
+              <code>{tokenReveal}</code>
+              <button
+                className="api-key-action-link"
+                type="button"
+                onClick={() => copyToken(tokenReveal)}
+                aria-label="Copy access key"
+                title="Copy access key"
+              >
+                Copy to clipboard
+              </button>
+            </div>
             {copyState === "copied" ? <span className="api-key-copy-feedback">Copied</span> : null}
             {copyState === "error" ? <span className="api-key-copy-feedback error">Copy failed</span> : null}
           </div>

@@ -688,11 +688,16 @@ button.danger {
 }
 
 .api-key-reveal-row {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.api-key-reveal-token-row {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
   flex-wrap: wrap;
-  margin-bottom: 0.75rem;
 }
 
 .api-key-copy-feedback {
