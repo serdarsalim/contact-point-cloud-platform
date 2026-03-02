@@ -17,6 +17,12 @@ type OrgAdmin = {
     id: string;
     username: string;
     email: string;
+    memberships: Array<{
+      organizationId: string;
+      organization: {
+        name: string;
+      };
+    }>;
   };
 };
 
@@ -395,9 +401,17 @@ export function OrgsManager({ initialOrganizations }: { initialOrganizations: Or
               {!adminsLoading && !adminsError && admins.length === 0 ? <p>No admins found.</p> : null}
               {!adminsLoading && !adminsError
                 ? admins.map((admin) => (
-                    <p key={admin.id} className="orgs-admin-row">
-                      <strong>{admin.user.username}</strong> ({admin.user.email})
-                    </p>
+                    <div key={admin.id} className="orgs-admin-row">
+                      <p>
+                        <strong>{admin.user.username}</strong> ({admin.user.email})
+                      </p>
+                      <p className="orgs-admin-orgs">
+                        Admin in:{" "}
+                        {admin.user.memberships.length > 0
+                          ? admin.user.memberships.map((membership) => membership.organization.name).join(", ")
+                          : selectedOrg.name}
+                      </p>
+                    </div>
                   ))
                 : null}
             </div>

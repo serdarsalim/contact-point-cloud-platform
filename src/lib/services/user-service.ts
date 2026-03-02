@@ -57,7 +57,20 @@ export async function listOrganizationAdmins(organizationId: string) {
           id: true,
           username: true,
           email: true,
-          createdAt: true
+          createdAt: true,
+          memberships: {
+            where: {
+              role: MembershipRole.ADMIN
+            },
+            select: {
+              organizationId: true,
+              organization: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
         }
       }
     },

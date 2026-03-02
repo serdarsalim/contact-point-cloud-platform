@@ -535,6 +535,15 @@ button.danger {
   margin: 0.2rem 0;
 }
 
+.orgs-admin-row p {
+  margin: 0;
+}
+
+.orgs-admin-orgs {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
 .orgs-password-reveal,
 .orgs-error {
   margin: 0.35rem 0 0.75rem;
