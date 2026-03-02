@@ -55,6 +55,37 @@ function templateTypeLabel(type: TemplateType): string {
   return type.toLowerCase();
 }
 
+function renderTemplateTypeIcon(type: TemplateType) {
+  if (type === "EMAIL") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+        <path d="M3 7l9 6 9-6"></path>
+      </svg>
+    );
+  }
+
+  if (type === "WHATSAPP") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4c4.7 0 8.5 3.4 8.5 7.5S16.7 19 12 19c-1 0-2-.2-2.9-.5L4 20l1.4-3.8C4.5 14.9 4 13.2 4 11.5 4 7.4 7.8 4 12 4z"></path>
+        <circle cx="9" cy="11.5" r="0.9"></circle>
+        <circle cx="12" cy="11.5" r="0.9"></circle>
+        <circle cx="15" cy="11.5" r="0.9"></circle>
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 3h12l4 4v14H4z"></path>
+      <path d="M16 3v4h4"></path>
+      <path d="M8 12h8"></path>
+      <path d="M8 16h8"></path>
+    </svg>
+  );
+}
+
 export function TemplatesManager({
   organizationId,
   initialTemplates,
@@ -213,30 +244,26 @@ export function TemplatesManager({
       <aside className="templates-sidebar card">
         <div className="templates-sidebar-head">
           <div className="templates-sidebar-actions">
-            <button className="button-inline" type="button" onClick={startNewTemplate}>
-              New
-            </button>
-          </div>
-          <label>
-            Filter by type
             <select
               value={typeFilter}
               onChange={(event) => setTypeFilter(event.target.value as TemplateTypeFilter)}
+              aria-label="Filter templates by type"
             >
-              <option value="ALL">All</option>
+              <option value="ALL">All templates</option>
               <option value="EMAIL">Email</option>
               <option value="WHATSAPP">WhatsApp</option>
               <option value="NOTE">Note</option>
             </select>
-          </label>
-          <label>
-            Search templates
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search name, subject, body"
-            />
-          </label>
+            <button className="button-inline" type="button" onClick={startNewTemplate}>
+              New
+            </button>
+          </div>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search name, subject, body"
+            aria-label="Search templates"
+          />
         </div>
 
         <div className="templates-list">
@@ -250,9 +277,15 @@ export function TemplatesManager({
             >
               <span className="template-list-item-head">
                 <span className="template-list-name">{template.name}</span>
-                <span className={typePillClass(template.type)}>{template.type}</span>
+                <span
+                  className={`${typePillClass(template.type)} template-type-icon`}
+                  role="img"
+                  aria-label={`${template.type} template`}
+                  title={template.type === "WHATSAPP" ? "WhatsApp" : template.type === "NOTE" ? "Note" : "Email"}
+                >
+                  {renderTemplateTypeIcon(template.type)}
+                </span>
               </span>
-              <span className="template-list-preview">{template.subject || template.body.slice(0, 80) || "No content"}</span>
             </button>
           ))}
         </div>
