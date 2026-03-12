@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { ContactModalLink } from "@/app/_components/contact-modal-link";
-import { LoginForm } from "@/app/admin/_components/login-form";
+import { LoginModalLink } from "@/app/_components/login-modal-link";
 import { getSessionUser } from "@/lib/auth/admin-auth";
 
 export const metadata: Metadata = {
@@ -66,7 +66,7 @@ export default async function HomePage() {
             <div className="site-nav-links">
               <a href="#features">Features</a>
               <a href="#screenshots">Screenshots</a>
-              <a href="#login">Login</a>
+              <LoginModalLink label="Login" className="site-nav-action" />
             </div>
           </div>
         </nav>
@@ -125,7 +125,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section id="login" className="simple-section manage-section">
+        <section className="simple-section manage-section">
           <div className="manage-copy">
             <h2>Manage shared templates</h2>
             <p>
@@ -138,14 +138,6 @@ export default async function HomePage() {
             <div className="manage-actions">
               <ContactModalLink label="Contact for access" className="site-button site-button-secondary" />
             </div>
-          </div>
-
-          <div className="manage-login">
-            <div className="manage-login-head">
-              <h3>Admin login</h3>
-              <p>For existing team template managers.</p>
-            </div>
-            <LoginForm />
           </div>
         </section>
 

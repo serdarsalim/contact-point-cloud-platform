@@ -1478,6 +1478,22 @@ code {
   color: #10233f;
 }
 
+.site-nav-action {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #445972;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.site-nav-action:hover {
+  color: #10233f;
+}
+
 .site-button {
   display: inline-flex;
   align-items: center;
@@ -1617,8 +1633,7 @@ code {
 }
 
 .feature-card,
-.screenshot-card,
-.manage-login {
+.screenshot-card {
   border: 1px solid #d9e3ef;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.84);
@@ -1700,50 +1715,6 @@ code {
   flex-wrap: wrap;
   gap: 0.9rem;
   margin-top: 1.4rem;
-}
-
-.manage-login {
-  width: min(420px, 100%);
-  padding: 22px;
-}
-
-.manage-login-head {
-  margin-bottom: 0.85rem;
-}
-
-.manage-login-head h3 {
-  margin-top: 0;
-}
-
-.manage-login-head p {
-  margin: 0;
-}
-
-.manage-login .login-card {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.manage-login .login-card h2 {
-  display: none;
-}
-
-.manage-login .login-card label {
-  color: #18304f;
-}
-
-.manage-login .login-card input {
-  border-color: #c4d5ea;
-  background: #ffffff;
-}
-
-.manage-login .login-card button {
-  margin-bottom: 0;
-  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
 }
 
 .site-contact-modal-backdrop {
@@ -1876,6 +1847,105 @@ code {
   color: #b42318;
 }
 
+.site-login-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(12, 22, 39, 0.48);
+  backdrop-filter: blur(10px);
+}
+
+.site-login-modal-card {
+  width: min(30rem, 100%);
+  border: 1px solid rgba(213, 224, 240, 0.95);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.09), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(248, 251, 255, 0.99) 100%);
+  box-shadow: 0 30px 90px rgba(13, 27, 52, 0.24);
+  padding: 1.35rem;
+}
+
+.site-login-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.site-login-modal-eyebrow {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4c63a6;
+}
+
+.site-login-modal-head h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.7rem, 3vw, 2.15rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  color: #10233f;
+}
+
+.site-login-modal-intro {
+  margin: 0.65rem 0 0;
+  color: #526880;
+}
+
+.site-login-modal-close {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d3deef;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #516780;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.site-login-modal-close:hover {
+  background: #ffffff;
+  color: #10233f;
+}
+
+.site-login-modal-form .login-card {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.site-login-modal-form .login-card h2 {
+  display: none;
+}
+
+.site-login-modal-form .login-card label {
+  color: #18304f;
+}
+
+.site-login-modal-form .login-card input {
+  border-color: #c4d5ea;
+  background: #ffffff;
+}
+
+.site-login-modal-form .login-card button {
+  margin-bottom: 0;
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+}
+
 .site-footer {
   display: flex;
   justify-content: space-between;
@@ -1930,15 +2000,21 @@ code {
     gap: 0.9rem;
   }
 
-  .site-contact-modal-card {
+  .site-contact-modal-card,
+  .site-login-modal-card {
     padding: 1.1rem;
   }
 
-  .site-contact-modal-head {
+  .site-contact-modal-head,
+  .site-login-modal-head {
     align-items: flex-start;
   }
 
   .site-contact-modal-copy h2 {
     font-size: 1.65rem;
+  }
+
+  .site-login-modal-head h2 {
+    font-size: 1.55rem;
   }
 }
