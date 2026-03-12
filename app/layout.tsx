@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Contact Point Cloud Platform",
-  description: "Cloud template admin for Contact Point extension"
+  title: {
+    default: "Contact Point",
+    template: "%s | Contact Point"
+  },
+  description: "Shared template platform and admin app for the Contact Point Chrome extension."
 };
 
 export default function RootLayout({
