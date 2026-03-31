@@ -26,27 +26,6 @@ const featureCards = [
   }
 ];
 
-const screenshotCards = [
-  {
-    title: "Contacts table",
-    text: "Bulk actions, exports, and quick outreach from the main HubSpot contacts view.",
-    src: "https://serdarsalim.com/contact-point/ContactListNew.png",
-    alt: "Contact Point contacts table inside HubSpot"
-  },
-  {
-    title: "Template picker",
-    text: "Choose the right Email or WhatsApp template in a few clicks.",
-    src: "https://serdarsalim.com/contact-point/ApplyTemplateNew.png",
-    alt: "Contact Point template picker"
-  },
-  {
-    title: "Settings and cloud access",
-    text: "Manage local settings and connect shared team templates when needed.",
-    src: "https://serdarsalim.com/contact-point/SettingsNew.png",
-    alt: "Contact Point settings and team template access keys"
-  }
-];
-
 export default async function HomePage() {
   const user = await getSessionUser();
 
@@ -64,38 +43,31 @@ export default async function HomePage() {
               <span>Contact Point</span>
             </a>
             <div className="site-nav-links">
-              <a href="#features">Features</a>
-              <a href="#screenshots">Screenshots</a>
+              <a
+                href="https://chromewebstore.google.com/detail/contact-point/lbkmdchppdedcpbodhnefeokaldihfmm"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Add to Chrome
+              </a>
               <LoginModalLink label="Login" className="site-nav-action" />
             </div>
           </div>
         </nav>
 
         <section className="hero-section">
-          <div className="hero-backdrop" aria-hidden="true" />
           <div className="hero-copy">
-            <h1>Template Manager for HubSpot.</h1>
-            <p className="hero-intro">
-              Contact Point brings Email, WhatsApp, Notes, Tasks, and shared team templates into one cleaner HubSpot
-              workflow.
-            </p>
-            <div className="hero-actions">
-              <a
-                href="https://chromewebstore.google.com/detail/contact-point/lbkmdchppdedcpbodhnefeokaldihfmm"
-                target="_blank"
-                rel="noreferrer"
-                className="site-button site-button-primary"
-              >
-                Add to Chrome
-              </a>
-            </div>
+            <h1>
+              The template manager
+              <br />
+              for HubSpot
+            </h1>
           </div>
         </section>
 
         <section id="features" className="simple-section">
           <div className="section-heading">
-            <h2>What Contact Point does</h2>
-            <p>The extension handles the CRM workflow. This site handles shared template management for teams.</p>
+            <h2>Unlimited templates</h2>
           </div>
           <div className="feature-grid">
             {featureCards.map((card) => (
@@ -105,36 +77,31 @@ export default async function HomePage() {
               </article>
             ))}
           </div>
-        </section>
-
-        <section id="screenshots" className="simple-section">
-          <div className="section-heading">
-            <h2>Screenshots</h2>
-            <p>A quick look at the extension inside real HubSpot workflows.</p>
+          <p className="section-note">
+            Templates automatically personalize each message with the contact&apos;s name, gender, and other details.
+          </p>
+          <div className="section-heading section-subheading">
+            <h2>Additional features</h2>
           </div>
-          <div className="screenshot-grid">
-            {screenshotCards.map((card) => (
-              <article key={card.title} className="screenshot-card">
-                <div className="screenshot-frame">
-                  <img src={card.src} alt={card.alt} loading="lazy" />
-                </div>
-                <h3>{card.title}</h3>
-                <p>{card.text}</p>
-              </article>
-            ))}
-          </div>
+          <ul className="feature-list">
+            <li>Quickly add local templates from inside the extension</li>
+            <li>Used shared cloud templates for email whatsapp and notes</li>
+            <li>Apply templates that loads in the extension page in HubSpot</li>
+            <li>Open any phone number in HubSpot in WhatsAsapp with pre-filled text</li>
+            <li>Open contacts in new tab instead of in the same page</li>
+            <li>Darkmode support for HubSpot</li>
+          </ul>
+          <p className="section-note">
+            Want more features? <ContactModalLink label="Reach out!" className="section-note-link" />
+          </p>
         </section>
 
         <section className="simple-section manage-section">
           <div className="manage-copy">
-            <h2>Manage shared templates</h2>
-            <p>
-              Team templates are a premium feature. Contact us to learn more or request access for your organization.
-            </p>
-            <p>
-              Local templates still work inside the extension. Cloud templates are for teams that want one shared
-              source of truth across Email, WhatsApp, and Notes.
-            </p>
+            <h2>Team templates</h2>
+            <p>Create and manage shared templates for your team from one place.</p>
+            <p>Give everyone access to the same Email, WhatsApp, and Note templates inside Contact Point.</p>
+            <p>Each team can manage shared templates centrally and grant access individually.</p>
             <div className="manage-actions">
               <ContactModalLink label="Contact for access" className="site-button site-button-secondary" />
             </div>
