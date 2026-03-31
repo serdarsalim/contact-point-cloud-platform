@@ -36,7 +36,7 @@ export default async function TemplatesPage({
   if (!selectedOrganization) {
     return (
       <main className="admin-main templates-page-main">
-        <AdminNavbar isSuperadmin={superadmin} userEmail={user.email} />
+        <AdminNavbar isSuperadmin={superadmin} userEmail={user.email} authMethod={user.authMethod} />
         <div className="card">
           <h1>No organization available</h1>
           <p>You do not have organization access for template management.</p>
@@ -63,6 +63,7 @@ export default async function TemplatesPage({
         }
         currentOrganizationId={selectedOrganization.id}
         userEmail={user.email}
+        authMethod={user.authMethod}
       />
       <TemplatesManager
         organizationId={selectedOrganization.id}

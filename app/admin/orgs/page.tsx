@@ -22,6 +22,7 @@ export default async function OrganizationsPage() {
         <AdminNavbar
           isSuperadmin={false}
           userEmail={user.email}
+          authMethod={user.authMethod}
           organizations={user.memberships.map((membership) => ({
             id: membership.organizationId,
             name: membership.organization.name
@@ -40,7 +41,7 @@ export default async function OrganizationsPage() {
 
   return (
     <main className="admin-main">
-      <AdminNavbar isSuperadmin={true} userEmail={user.email} />
+      <AdminNavbar isSuperadmin={true} userEmail={user.email} authMethod={user.authMethod} />
       <OrgsManager
         initialOrganizations={organizations.map((org) => ({
           id: org.id,

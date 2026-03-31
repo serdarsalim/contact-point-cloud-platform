@@ -16,6 +16,7 @@ export default async function ChangePasswordPage() {
       <AdminNavbar
         isSuperadmin={isSuperadmin(user)}
         userEmail={user.email}
+        authMethod={user.authMethod}
         organizations={user.memberships.map((membership) => ({
           id: membership.organizationId,
           name: membership.organization.name

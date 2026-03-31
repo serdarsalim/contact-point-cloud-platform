@@ -15,6 +15,10 @@ export type SessionUser = Prisma.UserGetPayload<{
   };
 }>;
 
+export type AuthenticatedUser = SessionUser & {
+  authMethod: "password" | "google";
+};
+
 export async function getSessionUser() {
   const cookieStore = await cookies();
   const rawSession = cookieStore.get(SESSION_COOKIE_NAME)?.value;
@@ -39,7 +43,11 @@ export async function getSessionUser() {
     return null;
   }
 
-  return user;
+  return {
+    ...user,
+    authMethod: payload.authMethod,
+    mustChangePassword: payload.authMethod === "google" ? false : user.mustChangePassword
+  } satisfies AuthenticatedUser;
 }
 
 export async function requireSessionUser(options?: { allowPasswordChangePending?: boolean }) {

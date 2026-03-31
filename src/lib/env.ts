@@ -16,5 +16,8 @@ export const env = {
   databaseUrl: () => readRequired("DATABASE_URL"),
   authSessionSecret: () => readRequired("AUTH_SESSION_SECRET"),
   tokenHashSalt: () => readRequired("TOKEN_HASH_SALT"),
-  appUrl: () => process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  appUrl: () => process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  googleClientId: () => process.env.GOOGLE_CLIENT_ID || "",
+  googleClientSecret: () => process.env.GOOGLE_CLIENT_SECRET || "",
+  googleOauthEnabled: () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 };

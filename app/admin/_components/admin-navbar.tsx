@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogoutButton } from "@/app/admin/_components/logout-button";
@@ -15,7 +16,8 @@ export function AdminNavbar({
   organizationId,
   organizations,
   currentOrganizationId,
-  userEmail
+  userEmail,
+  authMethod
 }: {
   isSuperadmin: boolean;
   organizationName?: string;
@@ -23,7 +25,9 @@ export function AdminNavbar({
   organizations?: NavbarOrganization[];
   currentOrganizationId?: string;
   userEmail: string;
+  authMethod: "password" | "google";
 }) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,49 +59,101 @@ export function AdminNavbar({
     return `/admin/orgs/${targetOrgId}`;
   }
 
+  useEffect(() => {
+    if (!settingsOpen) return undefined;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSettingsOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [settingsOpen]);
+
   return (
-    <nav className="admin-navbar" aria-label="Admin navigation">
-      <div className="admin-navbar-inner">
-        <div className="admin-navbar-org">
-          {showOrgSwitcher ? (
-            <select
-              aria-label="Switch organization"
-              className="admin-org-switcher"
-              value={activeOrganizationId}
-              onChange={(event) => router.push(getSwitchHref(event.target.value))}
+    <>
+      <nav className="admin-navbar" aria-label="Admin navigation">
+        <div className="admin-navbar-inner">
+          <div className="admin-navbar-org">
+            {showOrgSwitcher ? (
+              <select
+                aria-label="Switch organization"
+                className="admin-org-switcher"
+                value={activeOrganizationId}
+                onChange={(event) => router.push(getSwitchHref(event.target.value))}
+              >
+                {navOrganizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              leftLabel
+            )}
+          </div>
+          <div className="admin-navbar-links">
+            {isSuperadmin && !isAllOrgsPage ? (
+              <Link className={`admin-nav-link ${isAllOrgsActive ? "active" : ""}`} href="/admin/orgs">
+                All orgs
+              </Link>
+            ) : null}
+            {showManageOrgLink ? (
+              <Link className={`admin-nav-link ${isManageOrgActive ? "active" : ""}`} href={manageOrgHref}>
+                Workspace
+              </Link>
+            ) : null}
+            {!hideOrgContextLinks ? (
+              <Link className={`admin-nav-link ${isTemplatesActive ? "active" : ""}`} href={templatesHref}>
+                Templates
+              </Link>
+            ) : null}
+          </div>
+          <div className="admin-navbar-account">
+            <span>{userEmail}</span>
+            <button
+              type="button"
+              className="admin-settings-trigger"
+              aria-label="Open account settings"
+              onClick={() => setSettingsOpen(true)}
             >
-              {navOrganizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            leftLabel
-          )}
+              <span aria-hidden="true">⚙</span>
+            </button>
+          </div>
         </div>
-        <div className="admin-navbar-links">
-          {isSuperadmin && !isAllOrgsPage ? (
-            <Link className={`admin-nav-link ${isAllOrgsActive ? "active" : ""}`} href="/admin/orgs">
-              All orgs
-            </Link>
-          ) : null}
-          {showManageOrgLink ? (
-            <Link className={`admin-nav-link ${isManageOrgActive ? "active" : ""}`} href={manageOrgHref}>
-              Workspace
-            </Link>
-          ) : null}
-          {!hideOrgContextLinks ? (
-            <Link className={`admin-nav-link ${isTemplatesActive ? "active" : ""}`} href={templatesHref}>
-              Templates
-            </Link>
-          ) : null}
+      </nav>
+
+      {settingsOpen ? (
+        <div className="admin-settings-backdrop" onClick={() => setSettingsOpen(false)}>
+          <div className="admin-settings-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-settings-head">
+              <div>
+                <p className="admin-settings-eyebrow">Account</p>
+                <h3>Settings</h3>
+              </div>
+              <button
+                type="button"
+                className="admin-settings-close"
+                aria-label="Close settings"
+                onClick={() => setSettingsOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <p className="admin-settings-email">{userEmail}</p>
+            <div className="admin-settings-actions">
+              {authMethod === "password" ? (
+                <Link className="admin-settings-link" href="/admin/change-password" onClick={() => setSettingsOpen(false)}>
+                  Change password
+                </Link>
+              ) : null}
+              <LogoutButton variant="link" />
+            </div>
+          </div>
         </div>
-        <div className="admin-navbar-account">
-          <span>{userEmail}</span>
-          <LogoutButton variant="link" />
-        </div>
-      </div>
-    </nav>
+      ) : null}
+    </>
   );
 }

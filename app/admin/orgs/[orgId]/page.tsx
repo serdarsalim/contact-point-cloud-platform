@@ -31,6 +31,7 @@ export default async function OrganizationWorkspacePage({
         <AdminNavbar
           isSuperadmin={isSuperadmin(user)}
           userEmail={user.email}
+          authMethod={user.authMethod}
           organizations={user.memberships.map((membership) => ({
             id: membership.organizationId,
             name: membership.organization.name
@@ -81,6 +82,7 @@ export default async function OrganizationWorkspacePage({
         }
         currentOrganizationId={organization.id}
         userEmail={user.email}
+        authMethod={user.authMethod}
       />
       <OrgWorkspace
         org={{

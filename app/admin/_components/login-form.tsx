@@ -1,14 +1,25 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
+const errorMessages: Record<string, string> = {
+  google_not_configured: "Google sign-in is not configured yet.",
+  google_invalid_state: "Google sign-in could not be verified. Try again.",
+  google_unverified_email: "Your Google account email is not verified.",
+  google_no_access: "That Google account does not have admin access here.",
+  google_sign_in_failed: "Google sign-in failed. Try again."
+};
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const oauthError = searchParams.get("error");
+  const displayError = error || (oauthError ? errorMessages[oauthError] || "Login failed" : null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,10 +62,13 @@ export function LoginForm() {
           required
         />
       </label>
-      {error ? <p className="login-error">{error}</p> : null}
+      {displayError ? <p className="login-error">{displayError}</p> : null}
       <button type="submit" disabled={isLoading}>
         {isLoading ? "Signing in..." : "Log in"}
       </button>
+      <a href="/api/auth/google/start" className="login-google-button">
+        Continue with Google
+      </a>
     </form>
   );
 }
