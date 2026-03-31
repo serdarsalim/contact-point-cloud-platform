@@ -170,7 +170,7 @@ export function OrgWorkspace({
             <strong className="org-stat-value">{org.templateCount}</strong>
           </div>
           <div className="org-stat-tile">
-            <span className="org-stat-label">API tokens</span>
+            <span className="org-stat-label">Team members</span>
             <strong className="org-stat-value">{apiTokenCount}</strong>
           </div>
           <div className="org-stat-tile">

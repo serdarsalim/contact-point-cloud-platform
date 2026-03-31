@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { TinyMceEditor } from "@/app/admin/_components/tinymce-editor";
 
 type TemplateType = "EMAIL" | "WHATSAPP" | "NOTE";
@@ -119,6 +119,27 @@ export function TemplatesManager({
       return haystack.includes(query);
     });
   }, [templates, search, typeFilter]);
+
+  useEffect(() => {
+    setTypeFilter(initialTypeFilter);
+  }, [initialTypeFilter]);
+
+  useEffect(() => {
+    if (visibleTemplates.length === 0) {
+      setActiveTemplateId(null);
+      setDraft(emptyDraft(typeFilter === "ALL" ? "EMAIL" : typeFilter));
+      return;
+    }
+
+    const activeVisibleTemplate = visibleTemplates.find((template) => template.id === activeTemplateId);
+    if (activeVisibleTemplate) {
+      return;
+    }
+
+    const nextTemplate = visibleTemplates[0];
+    setActiveTemplateId(nextTemplate.id);
+    setDraft(draftFromTemplate(nextTemplate));
+  }, [activeTemplateId, typeFilter, visibleTemplates]);
 
   function selectTemplate(template: Template) {
     setActiveTemplateId(template.id);

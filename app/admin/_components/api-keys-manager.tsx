@@ -12,6 +12,19 @@ type ApiKey = {
   lastUsedAt: string | null;
 };
 
+function formatLastUsed(value: string | null) {
+  if (!value) {
+    return { date: "Never", time: "" };
+  }
+
+  const date = new Date(value);
+
+  return {
+    date: date.toLocaleDateString(),
+    time: date.toLocaleTimeString()
+  };
+}
+
 export function ApiKeysManager({
   organizationId,
   initialApiKeys,
@@ -146,7 +159,7 @@ export function ApiKeysManager({
         <div className="api-keys-header">
           <h3>Team template access</h3>
           <button className="button-inline" type="button" onClick={() => setShowCreateModal(true)}>
-            Add access key
+            Add team member
           </button>
         </div>
         {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
@@ -178,35 +191,42 @@ export function ApiKeysManager({
               <span>Status</span>
               <span>Actions</span>
             </div>
-            {apiKeys.map((key) => (
-              <div key={key.id} className="api-keys-row">
-                <div className="api-keys-name-cell">
-                  <strong>{key.label}</strong> <code>{key.prefix}</code>
+            {apiKeys.map((key) => {
+              const lastUsed = formatLastUsed(key.lastUsedAt);
+
+              return (
+                <div key={key.id} className="api-keys-row">
+                  <div className="api-keys-name-cell">
+                    <strong>{key.label}</strong> <code>{key.prefix}</code>
+                  </div>
+                  <span className="api-key-last-used">
+                    <span>{lastUsed.date}</span>
+                    {lastUsed.time ? <span>{lastUsed.time}</span> : null}
+                  </span>
+                  <span>{key.revokedAt ? "Revoked" : "Active"}</span>
+                  <div className="api-keys-actions-cell">
+                    <button
+                      className="api-key-action-icon"
+                      type="button"
+                      onClick={() => rotate(key.id)}
+                      aria-label="Rotate access key"
+                      title="Rotate access key"
+                    >
+                      {"\u21bb"}
+                    </button>
+                    <button
+                      className="api-key-delete-x"
+                      type="button"
+                      onClick={() => deleteKey(key.id, key.label)}
+                      aria-label={`Delete access key ${key.label}`}
+                      title="Delete access key"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
-                <span>{key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString() : "Never"}</span>
-                <span>{key.revokedAt ? "Revoked" : "Active"}</span>
-                <div className="api-keys-actions-cell">
-                  <button
-                    className="api-key-action-icon"
-                    type="button"
-                    onClick={() => rotate(key.id)}
-                    aria-label="Rotate access key"
-                    title="Rotate access key"
-                  >
-                    {"\u21bb"}
-                  </button>
-                  <button
-                    className="api-key-delete-x"
-                    type="button"
-                    onClick={() => deleteKey(key.id, key.label)}
-                    aria-label={`Delete access key ${key.label}`}
-                    title="Delete access key"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : null}
       </div>

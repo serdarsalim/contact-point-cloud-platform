@@ -742,6 +742,11 @@ button.danger {
   flex-wrap: wrap;
 }
 
+.api-key-last-used {
+  display: grid;
+  gap: 0.1rem;
+}
+
 .api-key-delete-x {
   width: auto;
   margin: 0;

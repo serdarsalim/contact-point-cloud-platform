@@ -10,7 +10,7 @@ type NavbarOrganization = {
   name: string;
 };
 
-type TemplateNavType = "EMAIL" | "NOTE" | "WHATSAPP";
+type TemplateNavType = "EMAIL" | "WHATSAPP" | "NOTE";
 
 export function AdminNavbar({
   isSuperadmin,
@@ -53,8 +53,8 @@ export function AdminNavbar({
   const activeTemplateType = searchParams.get("type") as TemplateNavType | null;
   const templateTypeLinks: Array<{ type: TemplateNavType; label: string }> = [
     { type: "EMAIL", label: "Email" },
-    { type: "NOTE", label: "Notes" },
-    { type: "WHATSAPP", label: "Whatsapp" }
+    { type: "WHATSAPP", label: "WhatsApp" },
+    { type: "NOTE", label: "Notes" }
   ];
 
   function getSwitchHref(targetOrgId: string) {
