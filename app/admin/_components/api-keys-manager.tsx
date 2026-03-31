@@ -186,7 +186,7 @@ export function ApiKeysManager({
         {apiKeys.length > 0 ? (
           <div className="api-keys-table">
             <div className="api-keys-row api-keys-row-head">
-              <span>Access key</span>
+              <span>Team member</span>
               <span>Last used</span>
               <span>Status</span>
               <span>Actions</span>

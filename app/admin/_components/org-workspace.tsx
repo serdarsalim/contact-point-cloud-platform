@@ -181,65 +181,67 @@ export function OrgWorkspace({
       </div>
 
       <div className="org-workspace-columns">
-        <div className="card">
-          <div className="org-admins-header">
-            <h3>Admins ({admins.length})</h3>
-            <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
-              Add admin
-            </button>
-          </div>
-          {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
-          {generatedPassword ? (
-            <p>
-              One-time generated password: <code>{generatedPassword}</code>
-            </p>
-          ) : null}
-          {resetPasswordReveal ? (
-            <p>
-              Reset password for <strong>{resetPasswordReveal.username}</strong>:{" "}
-              <code>{resetPasswordReveal.password}</code>
-            </p>
-          ) : null}
-          {admins.length === 0 ? <p>No admins assigned.</p> : null}
-          {admins.map((admin) => (
-            <div
-              key={admin.id}
-              style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}
-            >
-              <div className="org-admin-row">
-                <p className="org-admin-identity">
-                  <strong>{admin.user.username}</strong> ({admin.user.email})
-                </p>
-                <div className="org-admin-actions">
-                  {canResetAdminPasswords ? (
+        <div className="org-workspace-main">
+          <div className="card">
+            <div className="org-admins-header">
+              <h3>Admins</h3>
+              <button className="button-inline" type="button" onClick={() => setShowCreateAdminModal(true)}>
+                Add admin
+              </button>
+            </div>
+            {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
+            {generatedPassword ? (
+              <p>
+                One-time generated password: <code>{generatedPassword}</code>
+              </p>
+            ) : null}
+            {resetPasswordReveal ? (
+              <p>
+                Reset password for <strong>{resetPasswordReveal.username}</strong>:{" "}
+                <code>{resetPasswordReveal.password}</code>
+              </p>
+            ) : null}
+            {admins.length === 0 ? <p>No admins assigned.</p> : null}
+            {admins.map((admin) => (
+              <div
+                key={admin.id}
+                style={{ borderBottom: "1px solid #e5e7eb", paddingBottom: "0.6rem", marginBottom: "0.6rem" }}
+              >
+                <div className="org-admin-row">
+                  <p className="org-admin-identity">
+                    <strong>{admin.user.username}</strong> ({admin.user.email})
+                  </p>
+                  <div className="org-admin-actions">
+                    {canResetAdminPasswords ? (
+                      <button
+                        className="org-admin-link-button"
+                        type="button"
+                        onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                      >
+                        reset password
+                      </button>
+                    ) : null}
                     <button
-                      className="org-admin-link-button"
+                      className="org-admin-delete-x"
                       type="button"
-                      onClick={() => resetAdminPassword(admin.user.id, admin.user.username)}
+                      onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
+                      aria-label={`Delete user ${admin.user.username}`}
+                      title={`Delete user ${admin.user.username}`}
                     >
-                      reset password
+                      ×
                     </button>
-                  ) : null}
-                  <button
-                    className="org-admin-delete-x"
-                    type="button"
-                    onClick={() => revokeAdmin(admin.user.id, admin.user.username)}
-                    aria-label={`Delete user ${admin.user.username}`}
-                    title={`Delete user ${admin.user.username}`}
-                  >
-                    ×
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <ApiKeysManager
-          organizationId={org.id}
-          initialApiKeys={initialApiTokens}
-          onCountChange={setApiTokenCount}
-        />
+          <ApiKeysManager
+            organizationId={org.id}
+            initialApiKeys={initialApiTokens}
+            onCountChange={setApiTokenCount}
+          />
+        </div>
       </div>
 
       {showCreateAdminModal ? (

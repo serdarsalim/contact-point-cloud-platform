@@ -91,6 +91,8 @@ model Template {
   name           String
   subject        String?
   body           String
+  usageCount     Int          @default(0)
+  lastUsedAt     DateTime?
   imageAssetId   String?
   imageAlt       String?
   createdAt      DateTime     @default(now())

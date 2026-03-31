@@ -40,11 +40,13 @@ export function AdminNavbar({
 
   const manageOrgHref = activeOrganizationId ? `/admin/orgs/${activeOrganizationId}` : "/admin";
   const templatesHref = activeOrganizationId ? `/admin/templates?orgId=${activeOrganizationId}` : "/admin/templates";
+  const insightsHref = activeOrganizationId ? `/admin/insights?orgId=${activeOrganizationId}` : "/admin/insights";
   const showManageOrgLink = !isSuperadmin || Boolean(organizationId);
 
   const isManageOrgActive =
     pathname === "/admin" || pathname.startsWith("/admin/users") || pathname.startsWith("/admin/orgs/");
   const isTemplatesActive = pathname.startsWith("/admin/templates");
+  const isInsightsActive = pathname.startsWith("/admin/insights");
   const isAllOrgsActive = pathname === "/admin/orgs";
   const isAllOrgsPage = isSuperadmin && pathname === "/admin/orgs";
   const hideOrgContextLinks = isSuperadmin && pathname === "/admin/orgs";
@@ -62,6 +64,12 @@ export function AdminNavbar({
       const next = new URLSearchParams(searchParams.toString());
       next.set("orgId", targetOrgId);
       return `/admin/templates?${next.toString()}`;
+    }
+
+    if (pathname.startsWith("/admin/insights")) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.set("orgId", targetOrgId);
+      return `/admin/insights?${next.toString()}`;
     }
 
     return `/admin/orgs/${targetOrgId}`;
@@ -126,6 +134,11 @@ export function AdminNavbar({
                   </Link>
                 ))
               : null}
+            {!hideOrgContextLinks ? (
+              <Link className={`admin-nav-link ${isInsightsActive ? "active" : ""}`} href={insightsHref}>
+                Insights
+              </Link>
+            ) : null}
           </div>
           <div className="admin-navbar-account">
             <span>{userEmail}</span>
