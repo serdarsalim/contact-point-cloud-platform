@@ -88,14 +88,16 @@ function renderTemplateTypeIcon(type: TemplateType) {
 
 export function TemplatesManager({
   organizationId,
+  initialTypeFilter = "ALL",
   initialTemplates,
 }: {
   organizationId: string;
+  initialTypeFilter?: TemplateTypeFilter;
   initialTemplates: Template[];
 }) {
   const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>("ALL");
+  const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>(initialTypeFilter);
   const [showTypePickerModal, setShowTypePickerModal] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialTemplates[0]?.id || null);
   const [draft, setDraft] = useState<TemplateDraft>(

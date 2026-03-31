@@ -6,10 +6,20 @@ import { listTemplates } from "@/lib/services/template-service";
 import { AdminNavbar } from "@/app/admin/_components/admin-navbar";
 import { TemplatesManager } from "@/app/admin/_components/templates-manager";
 
+type TemplateTypeFilter = "ALL" | "EMAIL" | "WHATSAPP" | "NOTE";
+
+function parseTypeFilter(value?: string): TemplateTypeFilter {
+  if (value === "EMAIL" || value === "WHATSAPP" || value === "NOTE") {
+    return value;
+  }
+
+  return "ALL";
+}
+
 export default async function TemplatesPage({
   searchParams
 }: {
-  searchParams: Promise<{ orgId?: string }>;
+  searchParams: Promise<{ orgId?: string; type?: string }>;
 }) {
   const user = await getSessionUser();
 
@@ -21,7 +31,8 @@ export default async function TemplatesPage({
     redirect("/admin/change-password");
   }
 
-  const { orgId: requestedOrgId } = await searchParams;
+  const { orgId: requestedOrgId, type: requestedType } = await searchParams;
+  const initialTypeFilter = parseTypeFilter(requestedType);
 
   const organizations = isSuperadmin(user)
     ? await prisma.organization.findMany({ orderBy: { name: "asc" } })
@@ -67,6 +78,7 @@ export default async function TemplatesPage({
       />
       <TemplatesManager
         organizationId={selectedOrganization.id}
+        initialTypeFilter={initialTypeFilter}
         initialTemplates={initialTemplates.map((template) => ({
           id: template.id,
           organizationId: template.organizationId,

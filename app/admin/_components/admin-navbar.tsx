@@ -10,6 +10,8 @@ type NavbarOrganization = {
   name: string;
 };
 
+type TemplateNavType = "EMAIL" | "NOTE" | "WHATSAPP";
+
 export function AdminNavbar({
   isSuperadmin,
   organizationName,
@@ -48,6 +50,12 @@ export function AdminNavbar({
   const hideOrgContextLinks = isSuperadmin && pathname === "/admin/orgs";
   const leftLabel = activeOrganizationName || (isAllOrgsPage ? "All orgs" : isSuperadmin ? "" : "Admin");
   const showOrgSwitcher = !isSuperadmin && navOrganizations.length > 1 && Boolean(activeOrganizationId);
+  const activeTemplateType = searchParams.get("type") as TemplateNavType | null;
+  const templateTypeLinks: Array<{ type: TemplateNavType; label: string }> = [
+    { type: "EMAIL", label: "Email" },
+    { type: "NOTE", label: "Notes" },
+    { type: "WHATSAPP", label: "Whatsapp" }
+  ];
 
   function getSwitchHref(targetOrgId: string) {
     if (pathname.startsWith("/admin/templates")) {
@@ -77,6 +85,11 @@ export function AdminNavbar({
       <nav className="admin-navbar" aria-label="Admin navigation">
         <div className="admin-navbar-inner">
           <div className="admin-navbar-org">
+            {isSuperadmin && !isAllOrgsPage ? (
+              <Link className={`admin-nav-link ${isAllOrgsActive ? "active" : ""}`} href="/admin/orgs">
+                All orgs
+              </Link>
+            ) : null}
             {showOrgSwitcher ? (
               <select
                 aria-label="Switch organization"
@@ -91,25 +104,28 @@ export function AdminNavbar({
                 ))}
               </select>
             ) : (
-              leftLabel
+              <Link className="admin-navbar-org-link" href={manageOrgHref}>
+                {leftLabel}
+              </Link>
             )}
           </div>
           <div className="admin-navbar-links">
-            {isSuperadmin && !isAllOrgsPage ? (
-              <Link className={`admin-nav-link ${isAllOrgsActive ? "active" : ""}`} href="/admin/orgs">
-                All orgs
-              </Link>
-            ) : null}
             {showManageOrgLink ? (
               <Link className={`admin-nav-link ${isManageOrgActive ? "active" : ""}`} href={manageOrgHref}>
                 Workspace
               </Link>
             ) : null}
-            {!hideOrgContextLinks ? (
-              <Link className={`admin-nav-link ${isTemplatesActive ? "active" : ""}`} href={templatesHref}>
-                Templates
-              </Link>
-            ) : null}
+            {!hideOrgContextLinks
+              ? templateTypeLinks.map((item) => (
+                  <Link
+                    key={item.type}
+                    className={`admin-nav-link ${isTemplatesActive && activeTemplateType === item.type ? "active" : ""}`}
+                    href={`${templatesHref}${templatesHref.includes("?") ? "&" : "?"}type=${item.type}`}
+                  >
+                    {item.label}
+                  </Link>
+                ))
+              : null}
           </div>
           <div className="admin-navbar-account">
             <span>{userEmail}</span>
