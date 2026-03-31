@@ -966,6 +966,37 @@ code {
   margin: 0;
 }
 
+.templates-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.templates-search-row input {
+  margin: 0;
+}
+
+.templates-search-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.templates-search-toggle input {
+  width: auto;
+  margin: 0;
+}
+
 .templates-list {
   padding: 0.6rem;
   overflow-y: auto;

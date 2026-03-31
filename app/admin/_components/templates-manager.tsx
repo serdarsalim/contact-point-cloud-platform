@@ -45,6 +45,30 @@ function draftFromTemplate(template: Template): TemplateDraft {
   };
 }
 
+const searchFoldMap: Record<string, string> = {
+  "\u0131": "i",
+  "\u0130": "i",
+  "\u015f": "s",
+  "\u015e": "s",
+  "\u00e7": "c",
+  "\u00c7": "c",
+  "\u011f": "g",
+  "\u011e": "g",
+  "\u00fc": "u",
+  "\u00dc": "u",
+  "\u00f6": "o",
+  "\u00d6": "o"
+};
+
+function normalizeSearchValue(value: string) {
+  return value
+    .trim()
+    .replace(/[\u0131\u0130\u015f\u015e\u00e7\u00c7\u011f\u011e\u00fc\u00dc\u00f6\u00d6]/g, (char) => searchFoldMap[char] || char)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("en");
+}
+
 function typePillClass(type: TemplateType): string {
   if (type === "EMAIL") return "type-pill type-pill-email";
   if (type === "WHATSAPP") return "type-pill type-pill-whatsapp";
@@ -97,6 +121,7 @@ export function TemplatesManager({
 }) {
   const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState("");
+  const [searchTitlesOnly, setSearchTitlesOnly] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>(initialTypeFilter);
   const [showTypePickerModal, setShowTypePickerModal] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialTemplates[0]?.id || null);
@@ -108,17 +133,19 @@ export function TemplatesManager({
   const [isSaving, setIsSaving] = useState(false);
 
   const visibleTemplates = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = normalizeSearchValue(search);
 
     return templates.filter((template) => {
       if (typeFilter !== "ALL" && template.type !== typeFilter) {
         return false;
       }
       if (!query) return true;
-      const haystack = `${template.name} ${template.subject || ""} ${template.body}`.toLowerCase();
+      const haystack = searchTitlesOnly
+        ? normalizeSearchValue(`${template.name} ${template.subject || ""}`)
+        : normalizeSearchValue(`${template.name} ${template.subject || ""} ${template.body}`);
       return haystack.includes(query);
     });
-  }, [templates, search, typeFilter]);
+  }, [templates, search, searchTitlesOnly, typeFilter]);
 
   useEffect(() => {
     setTypeFilter(initialTypeFilter);
@@ -287,12 +314,22 @@ export function TemplatesManager({
               New
             </button>
           </div>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search name, subject, body"
-            aria-label="Search templates"
-          />
+          <div className="templates-search-row">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search name, subject, body"
+              aria-label="Search templates"
+            />
+            <label className="templates-search-toggle">
+              <input
+                type="checkbox"
+                checked={searchTitlesOnly}
+                onChange={(event) => setSearchTitlesOnly(event.target.checked)}
+              />
+              <span>Title only</span>
+            </label>
+          </div>
         </div>
 
         <div className="templates-list">
