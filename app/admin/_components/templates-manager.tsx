@@ -245,6 +245,12 @@ export function TemplatesManager({
   async function deleteTemplate() {
     if (!draft.id) return;
 
+    const confirmed = window.confirm(`Delete template "${draft.name}"?`);
+
+    if (!confirmed) {
+      return;
+    }
+
     setError(null);
 
     const response = await fetch(`/api/admin/templates/${draft.id}`, {

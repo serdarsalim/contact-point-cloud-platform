@@ -962,7 +962,7 @@ code {
 }
 
 .templates-list {
-  padding: 0.75rem;
+  padding: 0.6rem;
   overflow-y: auto;
   flex: 1;
 }
@@ -973,9 +973,9 @@ code {
   background: #ffffff;
   color: #1f2937;
   border-radius: 10px;
-  padding: 0.65rem 0.7rem;
+  padding: 0.42rem 0.55rem;
   text-align: left;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.08rem;
   cursor: pointer;
   transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
@@ -1000,7 +1000,8 @@ code {
 
 .template-list-name {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
+  line-height: 1.2;
 }
 
 .type-pill {
@@ -1014,8 +1015,8 @@ code {
 }
 
 .template-type-icon {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.45rem;
+  height: 1.45rem;
   justify-content: center;
   padding: 0;
 }
@@ -1031,7 +1032,7 @@ code {
 }
 
 .type-pill-email {
-  background: #dbeafe;
+  background: transparent;
   color: #1e3a8a;
 }
 
