@@ -66,7 +66,7 @@ export default async function HomePage() {
         </section>
 
         <section id="features" className="simple-section">
-          <div className="section-heading">
+          <div className="section-heading section-heading-primary">
             <h2>Unlimited templates</h2>
           </div>
           <div className="feature-grid">
