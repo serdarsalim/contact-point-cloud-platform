@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { badRequest, forbidden } from "@/lib/http";
 import { readBody } from "@/lib/request";
 import { writeAuditLog } from "@/lib/services/audit-service";
+import { createTemplate } from "@/lib/services/template-service";
 
 type ExtensionTemplateRecord = {
   name?: unknown;
@@ -109,14 +110,12 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const createdTemplate = await prisma.template.create({
-      data: {
-        organizationId,
-        type: template.type,
-        name: template.name,
-        subject: template.type === "EMAIL" ? template.subject : null,
-        body: template.body
-      }
+    const createdTemplate = await createTemplate({
+      organizationId,
+      type: template.type,
+      name: template.name,
+      subject: template.type === "EMAIL" ? template.subject : null,
+      body: template.body
     });
     existingMap.set(key, createdTemplate.id);
     created += 1;

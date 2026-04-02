@@ -14,6 +14,7 @@ type Template = {
   id: string;
   organizationId: string;
   type: TemplateType;
+  position: number;
   name: string;
   subject: string | null;
   body: string;
@@ -81,6 +82,18 @@ function templateTypeButtonLabel(type: TemplateType): string {
   return "New Note";
 }
 
+function compareTemplates(a: Template, b: Template) {
+  if (a.type !== b.type) {
+    return a.type.localeCompare(b.type);
+  }
+
+  if (a.position !== b.position) {
+    return a.position - b.position;
+  }
+
+  return a.name.localeCompare(b.name);
+}
+
 export function TemplatesManager({
   organizationId,
   initialTypeFilter = "ALL",
@@ -101,20 +114,25 @@ export function TemplatesManager({
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
+  const [draggedTemplateId, setDraggedTemplateId] = useState<string | null>(null);
+  const [dragOverTemplateId, setDragOverTemplateId] = useState<string | null>(null);
 
   const visibleTemplates = useMemo(() => {
     const query = normalizeSearchValue(search);
 
-    return templates.filter((template) => {
-      if (typeFilter !== "ALL" && template.type !== typeFilter) {
-        return false;
-      }
-      if (!query) return true;
-      const haystack = searchTitlesOnly
-        ? normalizeSearchValue(`${template.name} ${template.subject || ""}`)
-        : normalizeSearchValue(`${template.name} ${template.subject || ""} ${template.body}`);
-      return haystack.includes(query);
-    });
+    return templates
+      .filter((template) => {
+        if (typeFilter !== "ALL" && template.type !== typeFilter) {
+          return false;
+        }
+        if (!query) return true;
+        const haystack = searchTitlesOnly
+          ? normalizeSearchValue(`${template.name} ${template.subject || ""}`)
+          : normalizeSearchValue(`${template.name} ${template.subject || ""} ${template.body}`);
+        return haystack.includes(query);
+      })
+      .sort(compareTemplates);
   }, [templates, search, searchTitlesOnly, typeFilter]);
 
   useEffect(() => {
@@ -170,6 +188,7 @@ export function TemplatesManager({
 
   const createActions: TemplateType[] =
     typeFilter === "ALL" ? ["EMAIL", "WHATSAPP", "NOTE"] : [typeFilter];
+  const canReorder = typeFilter !== "ALL" && search.trim().length === 0;
 
   async function refresh(): Promise<Template[] | null> {
     const response = await fetch(`/api/admin/templates?orgId=${encodeURIComponent(organizationId)}`);
@@ -277,6 +296,82 @@ export function TemplatesManager({
     setStatus("Deleted");
   }
 
+  async function persistTemplateOrder(reorderedIds: string[]) {
+    if (typeFilter === "ALL") {
+      return;
+    }
+
+    const nextTemplates = templates.map((template) => {
+      if (template.type !== typeFilter) {
+        return template;
+      }
+
+      const nextPosition = reorderedIds.indexOf(template.id);
+      return {
+        ...template,
+        position: nextPosition + 1
+      };
+    });
+
+    setTemplates(nextTemplates);
+    setStatus("");
+    setError(null);
+    setIsReordering(true);
+
+    try {
+      const response = await fetch("/api/admin/templates", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          organizationId,
+          type: typeFilter,
+          orderedTemplateIds: reorderedIds
+        })
+      });
+
+      const data = (await response.json().catch(() => null)) as { error?: string; templates?: Template[] } | null;
+
+      if (!response.ok || !data?.templates) {
+        setError(data?.error || "Failed to reorder templates");
+        await refresh();
+        return;
+      }
+
+      setTemplates((previousTemplates) => {
+        const reorderedById = new Map(data.templates?.map((template) => [template.id, template]));
+        return previousTemplates.map((template) => reorderedById.get(template.id) || template);
+      });
+      setStatus("Order saved");
+    } catch {
+      setError("Failed to reorder templates");
+      await refresh();
+    } finally {
+      setIsReordering(false);
+    }
+  }
+
+  function moveDraggedTemplate(targetTemplateId: string) {
+    if (!canReorder || !draggedTemplateId || draggedTemplateId === targetTemplateId) {
+      return;
+    }
+
+    const typeTemplates = templates.filter((template) => template.type === typeFilter);
+    const draggedIndex = typeTemplates.findIndex((template) => template.id === draggedTemplateId);
+    const targetIndex = typeTemplates.findIndex((template) => template.id === targetTemplateId);
+
+    if (draggedIndex < 0 || targetIndex < 0) {
+      return;
+    }
+
+    const reorderedTypeTemplates = [...typeTemplates];
+    const [movedTemplate] = reorderedTypeTemplates.splice(draggedIndex, 1);
+    reorderedTypeTemplates.splice(targetIndex, 0, movedTemplate);
+
+    setDraggedTemplateId(null);
+    setDragOverTemplateId(null);
+    void persistTemplateOrder(reorderedTypeTemplates.map((template) => template.id));
+  }
+
   return (
     <div className="templates-workspace">
       <aside className="templates-sidebar card">
@@ -301,16 +396,50 @@ export function TemplatesManager({
         <div className="templates-list">
           {visibleTemplates.length === 0 ? <p className="templates-empty">No templates found.</p> : null}
           {visibleTemplates.map((template) => (
-            <button
+            <div
               key={template.id}
-              className={`template-list-item ${template.id === activeTemplateId ? "active" : ""}`}
-              type="button"
-              onClick={() => selectTemplate(template)}
+              className={`template-list-item ${template.id === activeTemplateId ? "active" : ""} ${
+                dragOverTemplateId === template.id ? "drag-over" : ""
+              }`}
+              draggable={canReorder && !isReordering}
+              onDragStart={(event) => {
+                if (!canReorder) return;
+                setDraggedTemplateId(template.id);
+                setDragOverTemplateId(null);
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("text/plain", template.id);
+              }}
+              onDragOver={(event) => {
+                if (!canReorder || draggedTemplateId === template.id) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+                setDragOverTemplateId(template.id);
+              }}
+              onDragLeave={() => {
+                if (dragOverTemplateId === template.id) {
+                  setDragOverTemplateId(null);
+                }
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                moveDraggedTemplate(template.id);
+              }}
+              onDragEnd={() => {
+                setDraggedTemplateId(null);
+                setDragOverTemplateId(null);
+              }}
             >
-              <span className="template-list-item-head">
-                <span className="template-list-name">{template.name}</span>
-              </span>
-            </button>
+              <button type="button" className="template-list-select" onClick={() => selectTemplate(template)}>
+                <span className="template-list-item-head">
+                  <span className="template-list-name">{template.name}</span>
+                  {canReorder ? (
+                    <span className="template-drag-handle" aria-hidden="true">
+                      :::
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            </div>
           ))}
         </div>
       </aside>

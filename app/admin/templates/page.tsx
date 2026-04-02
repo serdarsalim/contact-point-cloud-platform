@@ -83,6 +83,7 @@ export default async function TemplatesPage({
           id: template.id,
           organizationId: template.organizationId,
           type: template.type,
+          position: template.position,
           name: template.name,
           subject: template.subject,
           body: template.body

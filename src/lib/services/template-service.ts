@@ -29,7 +29,7 @@ export async function listTemplates(input: {
       organizationId: input.organizationId,
       ...(input.type ? { type: input.type } : {})
     },
-    orderBy: [{ type: "asc" }, { updatedAt: "desc" }]
+    orderBy: input.type ? [{ position: "asc" }, { createdAt: "asc" }] : [{ type: "asc" }, { position: "asc" }, { createdAt: "asc" }]
   });
 }
 
@@ -42,16 +42,27 @@ export async function createTemplate(input: {
   imageAssetId?: string | null;
   imageAlt?: string | null;
 }) {
-  return prisma.template.create({
-    data: {
-      organizationId: input.organizationId,
-      type: input.type,
-      name: input.name.trim(),
-      subject: input.subject,
-      body: input.body,
-      imageAssetId: input.imageAssetId,
-      imageAlt: input.imageAlt
-    }
+  return prisma.$transaction(async (tx) => {
+    const lastTemplate = await tx.template.findFirst({
+      where: {
+        organizationId: input.organizationId,
+        type: input.type
+      },
+      orderBy: [{ position: "desc" }]
+    });
+
+    return tx.template.create({
+      data: {
+        organizationId: input.organizationId,
+        type: input.type,
+        position: (lastTemplate?.position || 0) + 1,
+        name: input.name.trim(),
+        subject: input.subject,
+        body: input.body,
+        imageAssetId: input.imageAssetId,
+        imageAlt: input.imageAlt
+      }
+    });
   });
 }
 
@@ -82,8 +93,84 @@ export async function updateTemplate(
 }
 
 export async function deleteTemplate(templateId: string) {
-  return prisma.template.delete({
-    where: { id: templateId }
+  return prisma.$transaction(async (tx) => {
+    const deletedTemplate = await tx.template.delete({
+      where: { id: templateId }
+    });
+
+    await tx.template.updateMany({
+      where: {
+        organizationId: deletedTemplate.organizationId,
+        type: deletedTemplate.type,
+        position: {
+          gt: deletedTemplate.position
+        }
+      },
+      data: {
+        position: {
+          decrement: 1
+        }
+      }
+    });
+
+    return deletedTemplate;
+  });
+}
+
+export async function reorderTemplates(input: {
+  organizationId: string;
+  type: TemplateType;
+  orderedTemplateIds: string[];
+}) {
+  const existingTemplates = await prisma.template.findMany({
+    where: {
+      organizationId: input.organizationId,
+      type: input.type
+    },
+    select: {
+      id: true
+    },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }]
+  });
+
+  if (existingTemplates.length !== input.orderedTemplateIds.length) {
+    throw new Error("Template reorder payload does not match current template count");
+  }
+
+  const existingIds = new Set(existingTemplates.map((template) => template.id));
+  const orderedIds = new Set(input.orderedTemplateIds);
+  if (existingIds.size !== orderedIds.size) {
+    throw new Error("Template reorder payload contains duplicate or missing ids");
+  }
+
+  for (const templateId of input.orderedTemplateIds) {
+    if (!existingIds.has(templateId)) {
+      throw new Error("Template reorder payload contains invalid ids");
+    }
+  }
+
+  const valuesSql = Prisma.join(
+    input.orderedTemplateIds.map((templateId, index) => Prisma.sql`(${templateId}, ${index + 1})`)
+  );
+
+  await prisma.$executeRaw`
+    UPDATE "Template" AS template
+    SET "position" = ordering.position,
+        "updatedAt" = NOW()
+    FROM (
+      VALUES ${valuesSql}
+    ) AS ordering(id, position)
+    WHERE template."id" = ordering.id
+      AND template."organizationId" = ${input.organizationId}
+      AND template."type" = ${input.type}::"TemplateType"
+  `;
+
+  return prisma.template.findMany({
+    where: {
+      organizationId: input.organizationId,
+      type: input.type
+    },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }]
   });
 }
 

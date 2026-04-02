@@ -4,7 +4,7 @@ import { requireSessionUser } from "@/lib/auth/admin-auth";
 import { canAccessOrganization, getDefaultOrganizationId, isSuperadmin } from "@/lib/auth/rbac";
 import { badRequest, forbidden } from "@/lib/http";
 import { readBody } from "@/lib/request";
-import { createTemplate, listTemplates } from "@/lib/services/template-service";
+import { createTemplate, listTemplates, reorderTemplates } from "@/lib/services/template-service";
 import { writeAuditLog } from "@/lib/services/audit-service";
 
 function parseTemplateType(value: string | null): TemplateType | undefined {
@@ -105,6 +105,64 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return badRequest("Template name must be unique within organization + type");
+    }
+
+    throw error;
+  }
+}
+
+export async function PATCH(request: Request) {
+  const auth = await requireSessionUser();
+
+  if (auth.error || !auth.user) {
+    return auth.error;
+  }
+
+  const body = await readBody(request);
+  const organizationId = String(body.organizationId || "").trim() || getDefaultOrganizationId(auth.user);
+  const type = String(body.type || "").toUpperCase();
+  const orderedTemplateIds = Array.isArray(body.orderedTemplateIds)
+    ? body.orderedTemplateIds.map((value: unknown) => String(value))
+    : null;
+
+  if (!organizationId) {
+    return badRequest("organizationId is required");
+  }
+
+  if (!canAccessOrganization(auth.user, organizationId)) {
+    return forbidden();
+  }
+
+  if (!Object.values(TemplateType).includes(type as TemplateType)) {
+    return badRequest("type must be EMAIL, WHATSAPP, or NOTE");
+  }
+
+  if (!orderedTemplateIds || orderedTemplateIds.length === 0) {
+    return badRequest("orderedTemplateIds are required");
+  }
+
+  try {
+    const templates = await reorderTemplates({
+      organizationId,
+      type: type as TemplateType,
+      orderedTemplateIds
+    });
+
+    await writeAuditLog({
+      organizationId,
+      actorUserId: auth.user.id,
+      action: "template.reordered",
+      entityType: "TemplateOrder",
+      metadata: {
+        type,
+        orderedTemplateIds
+      }
+    });
+
+    return NextResponse.json({ templates });
+  } catch (error) {
+    if (error instanceof Error) {
+      return badRequest(error.message);
     }
 
     throw error;
