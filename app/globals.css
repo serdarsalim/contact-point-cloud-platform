@@ -1039,41 +1039,13 @@ code {
 
 .templates-search-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.6rem;
   align-items: center;
 }
 
 .templates-search-row input {
   margin: 0;
-}
-
-.templates-list-nav {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.templates-list-nav-button {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #d7e2ec;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #36506b;
-  font: inherit;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.templates-list-nav-button:hover:not(:disabled) {
-  border-color: #9eb8d4;
-  color: #10233f;
-}
-
-.templates-list-nav-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
 }
 
 .templates-list {

@@ -446,26 +446,6 @@ export function TemplatesManager({
               placeholder="Search name, subject, body"
               aria-label="Search templates"
             />
-            <div className="templates-list-nav">
-              <button
-                type="button"
-                className="templates-list-nav-button"
-                onClick={() => selectRelativeTemplate(-1)}
-                disabled={activeVisibleTemplateIndex <= 0}
-                aria-label="Select previous template"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className="templates-list-nav-button"
-                onClick={() => selectRelativeTemplate(1)}
-                disabled={activeVisibleTemplateIndex < 0 || activeVisibleTemplateIndex >= visibleTemplates.length - 1}
-                aria-label="Select next template"
-              >
-                ↓
-              </button>
-            </div>
           </div>
         </div>
 
