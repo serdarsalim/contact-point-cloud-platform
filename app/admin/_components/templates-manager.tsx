@@ -23,8 +23,6 @@ type TemplateDraft = {
   body: string;
 };
 
-const typeOptions: TemplateType[] = ["EMAIL", "WHATSAPP", "NOTE"];
-
 function emptyDraft(type: TemplateType = "EMAIL"): TemplateDraft {
   return {
     id: null,
@@ -69,45 +67,14 @@ function normalizeSearchValue(value: string) {
     .toLocaleLowerCase("en");
 }
 
-function typePillClass(type: TemplateType): string {
-  if (type === "EMAIL") return "type-pill type-pill-email";
-  if (type === "WHATSAPP") return "type-pill type-pill-whatsapp";
-  return "type-pill type-pill-note";
-}
-
 function templateTypeLabel(type: TemplateType): string {
   return type.toLowerCase();
 }
 
-function renderTemplateTypeIcon(type: TemplateType) {
-  if (type === "EMAIL") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-        <path d="M3 7l9 6 9-6"></path>
-      </svg>
-    );
-  }
-
-  if (type === "WHATSAPP") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 4c4.7 0 8.5 3.4 8.5 7.5S16.7 19 12 19c-1 0-2-.2-2.9-.5L4 20l1.4-3.8C4.5 14.9 4 13.2 4 11.5 4 7.4 7.8 4 12 4z"></path>
-        <circle cx="9" cy="11.5" r="0.9"></circle>
-        <circle cx="12" cy="11.5" r="0.9"></circle>
-        <circle cx="15" cy="11.5" r="0.9"></circle>
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 3h12l4 4v14H4z"></path>
-      <path d="M16 3v4h4"></path>
-      <path d="M8 12h8"></path>
-      <path d="M8 16h8"></path>
-    </svg>
-  );
+function templateTypeButtonLabel(type: TemplateType): string {
+  if (type === "EMAIL") return "New Email";
+  if (type === "WHATSAPP") return "New WhatsApp";
+  return "New Note";
 }
 
 export function TemplatesManager({
@@ -123,7 +90,6 @@ export function TemplatesManager({
   const [search, setSearch] = useState("");
   const [searchTitlesOnly, setSearchTitlesOnly] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>(initialTypeFilter);
-  const [showTypePickerModal, setShowTypePickerModal] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialTemplates[0]?.id || null);
   const [draft, setDraft] = useState<TemplateDraft>(
     initialTemplates[0] ? draftFromTemplate(initialTemplates[0]) : emptyDraft("EMAIL")
@@ -175,19 +141,15 @@ export function TemplatesManager({
     setStatus("");
   }
 
-  function startNewTemplate() {
-    setShowTypePickerModal(true);
-    setError(null);
-    setStatus("");
-  }
-
   function beginCreateTemplate(type: TemplateType) {
     setActiveTemplateId(null);
     setDraft(emptyDraft(type));
     setError(null);
     setStatus("");
-    setShowTypePickerModal(false);
   }
+
+  const createActions: TemplateType[] =
+    typeFilter === "ALL" ? ["EMAIL", "WHATSAPP", "NOTE"] : [typeFilter];
 
   async function refresh(): Promise<Template[] | null> {
     const response = await fetch(`/api/admin/templates?orgId=${encodeURIComponent(organizationId)}`);
@@ -300,19 +262,11 @@ export function TemplatesManager({
       <aside className="templates-sidebar card">
         <div className="templates-sidebar-head">
           <div className="templates-sidebar-actions">
-            <select
-              value={typeFilter}
-              onChange={(event) => setTypeFilter(event.target.value as TemplateTypeFilter)}
-              aria-label="Filter templates by type"
-            >
-              <option value="ALL">All templates</option>
-              <option value="EMAIL">Email</option>
-              <option value="WHATSAPP">WhatsApp</option>
-              <option value="NOTE">Note</option>
-            </select>
-            <button className="button-inline" type="button" onClick={startNewTemplate}>
-              New
-            </button>
+            {createActions.map((type) => (
+              <button key={type} className="button-inline" type="button" onClick={() => beginCreateTemplate(type)}>
+                {templateTypeButtonLabel(type)}
+              </button>
+            ))}
           </div>
           <div className="templates-search-row">
             <input
@@ -343,14 +297,6 @@ export function TemplatesManager({
             >
               <span className="template-list-item-head">
                 <span className="template-list-name">{template.name}</span>
-                <span
-                  className={`${typePillClass(template.type)} template-type-icon`}
-                  role="img"
-                  aria-label={`${template.type} template`}
-                  title={template.type === "WHATSAPP" ? "WhatsApp" : template.type === "NOTE" ? "Note" : "Email"}
-                >
-                  {renderTemplateTypeIcon(template.type)}
-                </span>
               </span>
             </button>
           ))}
@@ -424,35 +370,6 @@ export function TemplatesManager({
           {error ? <p style={{ color: "#b91c1c" }}>{error}</p> : null}
         </form>
       </section>
-
-      {showTypePickerModal ? (
-        <div className="admin-modal-backdrop" onClick={() => setShowTypePickerModal(false)}>
-          <div className="admin-modal-card" onClick={(event) => event.stopPropagation()}>
-            <div className="admin-modal-header">
-              <h3>Select template type</h3>
-              <button
-                className="secondary button-inline"
-                type="button"
-                onClick={() => setShowTypePickerModal(false)}
-              >
-                Close
-              </button>
-            </div>
-            <div className="template-type-picker-grid">
-              {typeOptions.map((option) => (
-                <button
-                  key={option}
-                  className="template-type-picker-button"
-                  type="button"
-                  onClick={() => beginCreateTemplate(option)}
-                >
-                  {option === "WHATSAPP" ? "WhatsApp" : option === "NOTE" ? "Note" : "Email"}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { ContactModalLink } from "@/app/_components/contact-modal-link";
+import { LegalModalLink } from "@/app/_components/legal-modal-link";
 import { LoginModalLink } from "@/app/_components/login-modal-link";
+import { privacyContent, termsContent } from "@/app/_lib/legal-content";
 import { getSessionUser } from "@/lib/auth/admin-auth";
 
 export const metadata: Metadata = {
@@ -110,6 +112,10 @@ export default async function HomePage() {
 
         <footer className="site-footer">
           <span>Contact Point</span>
+          <div className="site-footer-links">
+            <LegalModalLink label="Terms" className="site-footer-link-button" {...termsContent} />
+            <LegalModalLink label="Privacy" className="site-footer-link-button" {...privacyContent} />
+          </div>
           <a href="https://serdarsalim.com" target="_blank" rel="noreferrer">
             Developed by Serdar Salim
           </a>

@@ -1012,18 +1012,13 @@ code {
 }
 
 .templates-sidebar-actions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   margin-bottom: 0.6rem;
 }
 
 .templates-sidebar-actions .button-inline {
-  margin: 0;
-}
-
-.templates-sidebar-actions select {
   margin: 0;
 }
 
@@ -1099,48 +1094,6 @@ code {
   font-weight: 700;
   font-size: 0.82rem;
   line-height: 1.2;
-}
-
-.type-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.template-type-icon {
-  width: 1.45rem;
-  height: 1.45rem;
-  justify-content: center;
-  padding: 0;
-}
-
-.template-type-icon svg {
-  width: 1rem;
-  height: 1rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.type-pill-email {
-  background: transparent;
-  color: #1e3a8a;
-}
-
-.type-pill-whatsapp {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.type-pill-note {
-  background: #f3f4f6;
-  color: #374151;
 }
 
 .templates-empty {
@@ -1223,18 +1176,6 @@ code {
 
 .templates-textarea-compact {
   min-height: 260px;
-}
-
-.template-type-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-}
-
-.template-type-picker-button {
-  margin: 0;
-  padding: 0.8rem 0.9rem;
-  text-align: center;
 }
 
 .templates-page-main {
@@ -1365,11 +1306,6 @@ code {
   .templates-subject-field {
     grid-column: auto;
   }
-
-  .template-type-picker-grid {
-    grid-template-columns: 1fr;
-  }
-
   .templates-textarea {
     min-height: 70vh;
   }
@@ -2233,12 +2169,14 @@ code {
 .site-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
   padding: 74px 0 0;
   margin-top: 70px;
   border-top: 1px solid #dbe5f0;
   color: #6a7f96;
   font-size: 0.95rem;
+  flex-wrap: wrap;
 }
 
 .site-footer a {
@@ -2248,6 +2186,113 @@ code {
 
 .site-footer a:hover {
   color: #10233f;
+}
+
+.site-footer-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.site-footer-link-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.site-footer-link-button:hover {
+  color: #10233f;
+}
+
+.site-legal-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.site-legal-modal-card {
+  width: min(760px, 100%);
+  max-height: min(84vh, 900px);
+  overflow-y: auto;
+  border: 1px solid #d8e2ee;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 28px 80px rgba(16, 35, 63, 0.22);
+}
+
+.site-legal-modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.6rem 1.6rem 1rem;
+}
+
+.site-legal-modal-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #5f7490;
+}
+
+.site-legal-modal-head h2 {
+  margin: 0;
+  color: #10233f;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.1;
+}
+
+.site-legal-modal-intro {
+  margin: 0.5rem 0 0;
+  color: #5f7490;
+}
+
+.site-legal-modal-close {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid #d8e2ee;
+  border-radius: 999px;
+  background: #f6f9fc;
+  color: #18304f;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.site-legal-modal-close:hover {
+  background: #ffffff;
+  color: #10233f;
+}
+
+.site-legal-modal-body {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.6rem 1.6rem;
+  color: #314861;
+  line-height: 1.7;
+}
+
+.site-legal-modal-body p {
+  margin: 0;
+}
+
+.site-legal-modal-body strong {
+  color: #10233f;
+}
+
+.site-legal-modal-body a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 @media (max-width: 1024px) {
@@ -2267,6 +2312,7 @@ code {
 
   .site-footer {
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 
