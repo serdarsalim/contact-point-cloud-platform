@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogoutButton } from "@/app/admin/_components/logout-button";
@@ -11,6 +11,11 @@ type NavbarOrganization = {
 };
 
 type TemplateNavType = "EMAIL" | "WHATSAPP" | "NOTE";
+type ExtensionImportPayload = {
+  emailTemplates?: Array<{ id?: string; name?: string; subject?: string | null; body?: string }>;
+  whatsappTemplates?: Array<{ id?: string; name?: string; body?: string }>;
+  noteTemplates?: Array<{ id?: string; name?: string; body?: string }>;
+};
 
 export function AdminNavbar({
   isSuperadmin,
@@ -30,6 +35,10 @@ export function AdminNavbar({
   authMethod: "password" | "google";
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [importStatus, setImportStatus] = useState("");
+  const [importError, setImportError] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -87,6 +96,55 @@ export function AdminNavbar({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [settingsOpen]);
+
+  async function importTemplatesFromFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!activeOrganizationId) {
+      setImportError("Select an organization first.");
+      setImportStatus("");
+      return;
+    }
+
+    setIsImporting(true);
+    setImportError("");
+    setImportStatus("Importing templates...");
+
+    try {
+      const raw = await file.text();
+      const payload = JSON.parse(raw) as ExtensionImportPayload;
+      const response = await fetch("/api/admin/templates/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          organizationId: activeOrganizationId,
+          payload
+        })
+      });
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string; created?: number; updated?: number; total?: number }
+        | null;
+
+      if (!response.ok) {
+        setImportError(data?.error || "Failed to import templates.");
+        setImportStatus("");
+        return;
+      }
+
+      setImportStatus(
+        `Imported ${data?.total || 0} templates. Created ${data?.created || 0}, updated ${data?.updated || 0}.`
+      );
+      setImportError("");
+      router.refresh();
+    } catch (_error) {
+      setImportError("That file is not a valid Contact Point extension export.");
+      setImportStatus("");
+    } finally {
+      setIsImporting(false);
+    }
+  }
 
   return (
     <>
@@ -172,6 +230,29 @@ export function AdminNavbar({
               </button>
             </div>
             <p className="admin-settings-email">{userEmail}</p>
+            <div className="admin-settings-section">
+              <p className="admin-settings-section-title">Template import</p>
+              <p className="admin-settings-section-copy">
+                Import an extension export JSON into {activeOrganizationName || "this organization"}.
+              </p>
+              <input
+                ref={importInputRef}
+                className="admin-settings-file-input"
+                type="file"
+                accept="application/json,.json"
+                onChange={importTemplatesFromFile}
+              />
+              <button
+                type="button"
+                className="admin-settings-import-button"
+                onClick={() => importInputRef.current?.click()}
+                disabled={!activeOrganizationId || isImporting}
+              >
+                {isImporting ? "Importing..." : "Import templates"}
+              </button>
+              {importStatus ? <p className="admin-settings-import-status">{importStatus}</p> : null}
+              {importError ? <p className="admin-settings-import-error">{importError}</p> : null}
+            </div>
             <div className="admin-settings-actions">
               {authMethod === "password" ? (
                 <Link className="admin-settings-link" href="/admin/change-password" onClick={() => setSettingsOpen(false)}>
