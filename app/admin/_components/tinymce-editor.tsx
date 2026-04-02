@@ -71,15 +71,15 @@ export function TinyMceEditor({ value = "", onChange, height = 340 }: TinyMceEdi
 
       window.tinymce.init({
         target: textareaRef.current,
-        height,
         min_height: height,
-        resize: true,
+        resize: false,
         menubar: false,
         branding: false,
         license_key: "gpl",
-        plugins: ["link", "image", "lists", "code"],
+        plugins: ["link", "image", "lists", "code", "autoresize"],
         toolbar:
           "undo redo | blocks | bold italic underline | bullist numlist | link image | alignleft aligncenter alignright | code",
+        autoresize_bottom_margin: 20,
         content_style: `body { min-height: ${Math.max(100, height - 160)}px; }`,
         image_title: true,
         automatic_uploads: false,

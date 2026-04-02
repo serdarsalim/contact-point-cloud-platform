@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   readTemplateSearchTitlesOnlyPreference,
   TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT
@@ -117,6 +117,7 @@ export function TemplatesManager({
   const [isReordering, setIsReordering] = useState(false);
   const [draggedTemplateId, setDraggedTemplateId] = useState<string | null>(null);
   const [dragOverTemplateId, setDragOverTemplateId] = useState<string | null>(null);
+  const plainTextBodyRef = useRef<HTMLTextAreaElement | null>(null);
 
   const visibleTemplates = useMemo(() => {
     const query = normalizeSearchValue(search);
@@ -172,6 +173,15 @@ export function TemplatesManager({
     setDraft(draftFromTemplate(nextTemplate));
   }, [activeTemplateId, typeFilter, visibleTemplates]);
 
+  useEffect(() => {
+    if (!plainTextBodyRef.current || draft.type === "EMAIL") {
+      return;
+    }
+
+    plainTextBodyRef.current.style.height = "0px";
+    plainTextBodyRef.current.style.height = `${plainTextBodyRef.current.scrollHeight}px`;
+  }, [draft.body, draft.type]);
+
   function selectTemplate(template: Template) {
     setActiveTemplateId(template.id);
     setDraft(draftFromTemplate(template));
@@ -189,6 +199,52 @@ export function TemplatesManager({
   const createActions: TemplateType[] =
     typeFilter === "ALL" ? ["EMAIL", "WHATSAPP", "NOTE"] : [typeFilter];
   const canReorder = typeFilter !== "ALL" && search.trim().length === 0;
+  const activeVisibleTemplateIndex = visibleTemplates.findIndex((template) => template.id === activeTemplateId);
+
+  function selectRelativeTemplate(direction: -1 | 1) {
+    if (visibleTemplates.length === 0) {
+      return;
+    }
+
+    const currentIndex = activeVisibleTemplateIndex >= 0 ? activeVisibleTemplateIndex : 0;
+    const nextIndex = currentIndex + direction;
+
+    if (nextIndex < 0 || nextIndex >= visibleTemplates.length) {
+      return;
+    }
+
+    selectTemplate(visibleTemplates[nextIndex]);
+  }
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName;
+      const isTypingTarget =
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT" ||
+        target?.isContentEditable === true ||
+        target?.closest(".tox") !== null;
+
+      if (isTypingTarget) {
+        return;
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        selectRelativeTemplate(-1);
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        selectRelativeTemplate(1);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeVisibleTemplateIndex, visibleTemplates]);
 
   async function refresh(): Promise<Template[] | null> {
     const response = await fetch(`/api/admin/templates?orgId=${encodeURIComponent(organizationId)}`);
@@ -390,6 +446,26 @@ export function TemplatesManager({
               placeholder="Search name, subject, body"
               aria-label="Search templates"
             />
+            <div className="templates-list-nav">
+              <button
+                type="button"
+                className="templates-list-nav-button"
+                onClick={() => selectRelativeTemplate(-1)}
+                disabled={activeVisibleTemplateIndex <= 0}
+                aria-label="Select previous template"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="templates-list-nav-button"
+                onClick={() => selectRelativeTemplate(1)}
+                disabled={activeVisibleTemplateIndex < 0 || activeVisibleTemplateIndex >= visibleTemplates.length - 1}
+                aria-label="Select next template"
+              >
+                ↓
+              </button>
+            </div>
           </div>
         </div>
 
@@ -499,11 +575,12 @@ export function TemplatesManager({
             </div>
           ) : (
             <textarea
+              ref={plainTextBodyRef}
               className="templates-textarea templates-textarea-compact"
               value={draft.body}
               onChange={(event) => setDraft((prev) => ({ ...prev, body: event.target.value }))}
               required
-              rows={8}
+              rows={1}
               placeholder={`${draft.type} templates use plain text`}
             />
           )}
