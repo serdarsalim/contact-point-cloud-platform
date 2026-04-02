@@ -3,6 +3,11 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  readTemplateSearchTitlesOnlyPreference,
+  TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT,
+  writeTemplateSearchTitlesOnlyPreference
+} from "@/app/admin/_lib/template-search-preferences";
 import { LogoutButton } from "@/app/admin/_components/logout-button";
 
 type NavbarOrganization = {
@@ -38,6 +43,7 @@ export function AdminNavbar({
   const [importStatus, setImportStatus] = useState("");
   const [importError, setImportError] = useState("");
   const [isImporting, setIsImporting] = useState(false);
+  const [searchTitlesOnly, setSearchTitlesOnly] = useState(true);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -96,6 +102,22 @@ export function AdminNavbar({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [settingsOpen]);
+
+  useEffect(() => {
+    setSearchTitlesOnly(readTemplateSearchTitlesOnlyPreference());
+
+    function syncSearchPreference() {
+      setSearchTitlesOnly(readTemplateSearchTitlesOnlyPreference());
+    }
+
+    window.addEventListener("storage", syncSearchPreference);
+    window.addEventListener(TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT, syncSearchPreference);
+
+    return () => {
+      window.removeEventListener("storage", syncSearchPreference);
+      window.removeEventListener(TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT, syncSearchPreference);
+    };
+  }, []);
 
   async function importTemplatesFromFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -199,7 +221,6 @@ export function AdminNavbar({
             ) : null}
           </div>
           <div className="admin-navbar-account">
-            <span>{userEmail}</span>
             <button
               type="button"
               className="admin-settings-trigger"
@@ -217,7 +238,6 @@ export function AdminNavbar({
           <div className="admin-settings-modal" onClick={(event) => event.stopPropagation()}>
             <div className="admin-settings-head">
               <div>
-                <p className="admin-settings-eyebrow">Account</p>
                 <h3>Settings</h3>
               </div>
               <button
@@ -229,7 +249,27 @@ export function AdminNavbar({
                 ×
               </button>
             </div>
-            <p className="admin-settings-email">{userEmail}</p>
+            <p className="admin-settings-email">Logged in as: {userEmail}</p>
+            {isTemplatesActive ? (
+              <div className="admin-settings-section">
+                <p className="admin-settings-section-title">Template search</p>
+                <p className="admin-settings-section-copy">
+                  Search names and email subjects only. Turn this off to also search template body content.
+                </p>
+                <label className="admin-settings-toggle">
+                  <input
+                    type="checkbox"
+                    checked={searchTitlesOnly}
+                    onChange={(event) => {
+                      const nextValue = event.target.checked;
+                      setSearchTitlesOnly(nextValue);
+                      writeTemplateSearchTitlesOnlyPreference(nextValue);
+                    }}
+                  />
+                  <span>Title only search</span>
+                </label>
+              </div>
+            ) : null}
             <div className="admin-settings-section">
               <p className="admin-settings-section-title">Template import</p>
               <p className="admin-settings-section-copy">

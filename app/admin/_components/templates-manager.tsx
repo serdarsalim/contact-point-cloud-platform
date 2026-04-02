@@ -1,6 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  readTemplateSearchTitlesOnlyPreference,
+  TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT
+} from "@/app/admin/_lib/template-search-preferences";
 import { TinyMceEditor } from "@/app/admin/_components/tinymce-editor";
 
 type TemplateType = "EMAIL" | "WHATSAPP" | "NOTE";
@@ -88,7 +92,7 @@ export function TemplatesManager({
 }) {
   const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState("");
-  const [searchTitlesOnly, setSearchTitlesOnly] = useState(false);
+  const [searchTitlesOnly, setSearchTitlesOnly] = useState(true);
   const [typeFilter, setTypeFilter] = useState<TemplateTypeFilter>(initialTypeFilter);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialTemplates[0]?.id || null);
   const [draft, setDraft] = useState<TemplateDraft>(
@@ -116,6 +120,22 @@ export function TemplatesManager({
   useEffect(() => {
     setTypeFilter(initialTypeFilter);
   }, [initialTypeFilter]);
+
+  useEffect(() => {
+    setSearchTitlesOnly(readTemplateSearchTitlesOnlyPreference());
+
+    function syncSearchPreference() {
+      setSearchTitlesOnly(readTemplateSearchTitlesOnlyPreference());
+    }
+
+    window.addEventListener("storage", syncSearchPreference);
+    window.addEventListener(TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT, syncSearchPreference);
+
+    return () => {
+      window.removeEventListener("storage", syncSearchPreference);
+      window.removeEventListener(TEMPLATE_SEARCH_PREFERENCES_UPDATED_EVENT, syncSearchPreference);
+    };
+  }, []);
 
   useEffect(() => {
     if (visibleTemplates.length === 0) {
@@ -275,14 +295,6 @@ export function TemplatesManager({
               placeholder="Search name, subject, body"
               aria-label="Search templates"
             />
-            <label className="templates-search-toggle">
-              <input
-                type="checkbox"
-                checked={searchTitlesOnly}
-                onChange={(event) => setSearchTitlesOnly(event.target.checked)}
-              />
-              <span>Title only</span>
-            </label>
           </div>
         </div>
 
